@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>License Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#0b1020;color:#eef2ff}.wrap{max-width:900px;margin:auto;padding:24px}.card{background:#151c31;border:1px solid #29324d;border-radius:16px;padding:18px;margin-bottom:16px}h1{margin:0 0 18px;font-size:24px}h2{font-size:17px;margin-top:0}label{display:block;margin:12px 0 6px;color:#aeb8d4;font-size:14px}input,select,button{width:100%;padding:11px;border-radius:10px;border:1px solid #34405f;background:#0e1528;color:#fff;font:inherit}button{cursor:pointer;background:#315efb;border:0;font-weight:700;margin-top:10px}button.secondary{background:#26304a}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}pre{white-space:pre-wrap;word-break:break-word;background:#090e1b;padding:14px;border-radius:10px;min-height:60px}.key{font-size:18px;font-weight:700;letter-spacing:1px}.small{font-size:12px;color:#9da8c5}.ok{color:#63e6be}.err{color:#ff8f8f}@media(max-width:650px){.row{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<h1>License Admin</h1>
+<div class="card"><h2>⚙️ Kết nối</h2>
+<label>Worker URL</label><input id="base" value="https://key.minhdz.workers.dev">
+<label>Admin Token</label><input id="token" type="password" placeholder="ADMIN_TOKEN">
+<p class="small">Không nhập Firebase private key vào đây.</p><button onclick="health()">Kiểm tra Worker</button><div id="health"></div></div>
+<div class="card"><h2>🔑 Tạo license</h2><div class="row"><div><label>Số lượng</label><input id="count" type="number" min="1" max="100" value="1"></div>
+<div><label>Loại</label><select id="type"><option value="free">Free</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly" selected>Monthly</option><option value="lifetime">Lifetime</option></select></div></div>
+<label>Ngày hết hạn (không bắt buộc)</label><input id="expires" type="datetime-local"><label>Ghi chú</label><input id="note" placeholder="Ví dụ: khách hàng A"><button onclick="generate()">Generate Key</button><div id="generated"></div></div>
+<div class="card"><h2>🔎 Kiểm tra license</h2><label>License key</label><input id="lookupKey" placeholder="Nhập key"><button onclick="lookup()">Get license</button><pre id="lookupOut"></pre></div>
+<div class="card"><h2>🛠️ Quản lý</h2><div class="row"><button class="secondary" onclick="revoke()">Revoke key</button><button class="secondary" onclick="resetHwid()">Reset HWID</button></div><pre id="actionOut"></pre></div>
+</div>
+<script>
+const $=id=>document.getElementById(id), base=()=>$('#base').value.trim().replace(/\/+$/,'');
+function headers(){return {'Authorization':'Bearer '+$('#token').value,'Content-Type':'application/json'}}
+async function api(path,opt={}){const r=await fetch(base()+path,{...opt,headers:{...headers(),...(opt.headers||{})}}),t=await r.text();let d;try{d=JSON.parse(t)}catch{d={raw:t}}if(!r.ok)throw Error(JSON.stringify(d));return d}
+async function health(){try{let d=await (await fetch(base()+'/api/health')).json();$('#health').innerHTML='<p class="ok">✓ Worker hoạt động: '+JSON.stringify(d)+'</p>'}catch(e){$('#health').innerHTML='<p class="err">✗ '+e.message+'</p>'}}
+async function generate(){try{let x=$('#expires').value;if(x)x=new Date(x).toISOString();let d=await api('/admin/generate',{method:'POST',body:JSON.stringify({count:+$('#count').value,type:$('#type').value,expiresAt:x,note:$('#note').value})});$('#generated').innerHTML=d.licenses.map(x=>'<p class="key">'+esc(x.key)+'</p>').join('')+'<pre>'+esc(JSON.stringify(d,null,2))+'</pre>'}catch(e){$('#generated').innerHTML='<p class="err">'+esc(e.message)+'</p>'}}
+async function lookup(){let k=$('#lookupKey').value.trim();if(!k)return;try{$('#lookupOut').textContent=JSON.stringify(await api('/admin/get?key='+encodeURIComponent(k)),null,2)}catch(e){$('#lookupOut').textContent=e.message}}
+async function revoke(){let k=$('#lookupKey').value.trim();if(!k)return alert('Nhập key trước');try{$('#actionOut').textContent=JSON.stringify(await api('/admin/revoke',{method:'POST',body:JSON.stringify({key:k})}),null,2)}catch(e){$('#actionOut').textContent=e.message}}
+async function resetHwid(){let k=$('#lookupKey').value.trim();if(!k)return alert('Nhập key trước');try{$('#actionOut').textContent=JSON.stringify(await api('/admin/reset-hwid',{method:'POST',body:JSON.stringify({key:k})}),null,2)}catch(e){$('#actionOut').textContent=e.message}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script></body></html>
