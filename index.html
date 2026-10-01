@@ -444,11 +444,15 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
       <div class="card-title" style="justify-content:space-between">
         <span style="display:flex;align-items:center;gap:8px">
           <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-          Đã tạo — <span id="gen-count-lbl" style="color:var(--accent)">0 key</span>
+          Kết quả — <span id="gen-count-lbl" style="color:var(--accent)">0 key</span>
         </span>
         <button class="btn btn-ghost btn-sm" onclick="copyAllGenKeys()">Sao chép tất cả</button>
       </div>
       <div class="gen-box" id="gen-keys-box"></div>
+      <div style="margin-top:14px">
+        <div class="section-label" style="margin-bottom:6px">Phản hồi API thô</div>
+        <div class="output-box" id="gen-raw-out" style="max-height:180px">Chưa có yêu cầu.</div>
+      </div>
     </div>
   </section>
 
@@ -509,24 +513,26 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
         <div class="page-title">Tất cả Key</div>
         <div class="page-sub">Đã tải: <span id="list-count" style="color:var(--accent)">—</span> key</div>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="listLicenses()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
-        Làm mới
-      </button>
+      <div class="btn-group" style="margin-top:0">
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">Xuất CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="listLicenses()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+          Làm mới
+        </button>
+      </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <div class="search-row">
         <input id="search-input" placeholder="Tìm theo key, HWID, ghi chú…" oninput="filterTable()">
-        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">Xuất CSV</button>
       </div>
       <div class="filter-row" id="filter-chips">
-        <span class="chip active-chip" data-f="all" onclick="setFilter('all',this)">Tất cả</span>
-        <span class="chip" data-f="active"  onclick="setFilter('active',this)">Hoạt động</span>
-        <span class="chip" data-f="revoked" onclick="setFilter('revoked',this)">Thu hồi</span>
-        <span class="chip" data-f="expired" onclick="setFilter('expired',this)">Hết hạn</span>
-        <span class="chip" data-f="weekly"  onclick="setFilter('weekly',this)">Weekly</span>
-        <span class="chip" data-f="monthly" onclick="setFilter('monthly',this)">Monthly</span>
-        <span class="chip" data-f="lifetime" onclick="setFilter('lifetime',this)">Lifetime</span>
+        <span class="chip active-chip" data-f="all"      onclick="setFilter('all',this)">Tất cả</span>
+        <span class="chip" data-f="active"               onclick="setFilter('active',this)">Hoạt động</span>
+        <span class="chip" data-f="revoked"              onclick="setFilter('revoked',this)">Thu hồi</span>
+        <span class="chip" data-f="expired"              onclick="setFilter('expired',this)">Hết hạn</span>
+        <span class="chip" data-f="weekly"               onclick="setFilter('weekly',this)">Weekly</span>
+        <span class="chip" data-f="monthly"              onclick="setFilter('monthly',this)">Monthly</span>
+        <span class="chip" data-f="lifetime"             onclick="setFilter('lifetime',this)">Lifetime</span>
       </div>
     </div>
     <div class="table-wrap">
@@ -539,7 +545,7 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
             <th>Hết hạn</th>
             <th>HWID</th>
             <th>Ghi chú</th>
-            <th></th>
+            <th style="text-align:center">Hành động</th>
           </tr>
         </thead>
         <tbody id="keys-tbody">
@@ -549,6 +555,14 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
           </div></td></tr>
         </tbody>
       </table>
+    </div>
+    <!-- raw response -->
+    <div class="card" id="list-raw-card" style="display:none">
+      <div class="card-title">
+        <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Phản hồi API thô
+      </div>
+      <div class="output-box" id="list-raw-out" style="max-height:200px"></div>
     </div>
   </section>
 
@@ -699,35 +713,62 @@ async function generate(){
         note: $('note').value
       })
     });
+    // luôn hiển thị raw response để debug
+    setOutput($('gen-raw-out'), data, status);
     if(ok){
-      const keys=data.keys||data.data||(Array.isArray(data)?data:[]);
-      const n=keys.length||data.count||1;
+      // thử mọi shape response có thể
+      let keys = [];
+      if(Array.isArray(data))                    keys = data;
+      else if(Array.isArray(data.keys))          keys = data.keys;
+      else if(Array.isArray(data.data))          keys = data.data;
+      else if(Array.isArray(data.licenses))      keys = data.licenses;
+      else if(typeof data.key === 'string')      keys = [data.key];
+      else if(typeof data.license === 'string')  keys = [data.license];
+      // nếu API chỉ trả count mà không có mảng keys -> hiển thị raw JSON
+      const n = keys.length || data.count || Number($('count').value) || 1;
       toast(`Đã tạo ${n} key`,'🔑');
       appendLog(`Tạo ${n} key thành công [${$('type').value}]`,'ok');
-      renderGenKeys(keys);
+      renderGenKeys(keys, data);
       refreshStats();
     } else {
       toast('Lỗi: HTTP '+status,'❌');
       appendLog('Tạo key thất bại: HTTP '+status,'err');
+      $('gen-result').style.display='';
+      $('gen-count-lbl').textContent='Lỗi';
     }
-  }catch(e){ toast('Lỗi: '+e.message,'❌'); }
+  }catch(e){
+    toast('Lỗi: '+e.message,'❌');
+    appendLog('Exception: '+e.message,'err');
+  }
   finally{
     btn.disabled=false;
     btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Tạo Key';
   }
 }
 
-function renderGenKeys(keys){
+function renderGenKeys(keys, rawData){
   const box=$('gen-keys-box'), card=$('gen-result');
   box.innerHTML='';
-  if(!keys||!keys.length){ card.style.display='none'; return; }
   card.style.display='';
+  if(!keys || !keys.length){
+    // không có mảng key — hiển thị raw response để người dùng tự xem
+    $('gen-count-lbl').textContent='Xem phản hồi bên dưới';
+    const row=document.createElement('div'); row.className='gen-row';
+    row.style.color='var(--text-muted)';
+    row.style.fontFamily='var(--mono)';
+    row.style.fontSize='11.5px';
+    row.style.whiteSpace='pre-wrap';
+    row.textContent=JSON.stringify(rawData, null, 2);
+    box.appendChild(row);
+    return;
+  }
   $('gen-count-lbl').textContent=keys.length+' key';
   keys.forEach(k=>{
-    const s = typeof k==='string'?k:(k.key||k.license||JSON.stringify(k));
+    const s = typeof k==='string'?k:(k.key||k.license||k.id||JSON.stringify(k));
+    const safe = s.replace(/'/g,"\\'");
     const row=document.createElement('div'); row.className='gen-row';
-    row.innerHTML=`<span>${s}</span>
-      <button class="icon-btn" title="Sao chép" onclick="cp('${s}')">
+    row.innerHTML=`<span style="font-family:var(--mono);font-size:12px">${s}</span>
+      <button class="icon-btn" title="Sao chép" onclick="cp('${safe}')">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       </button>`;
     box.appendChild(row);
@@ -735,8 +776,13 @@ function renderGenKeys(keys){
 }
 
 function copyAllGenKeys(){
-  const items=Array.from($('gen-keys-box').querySelectorAll('.gen-row span')).map(s=>s.textContent);
-  navigator.clipboard.writeText(items.join('\n')).then(()=>toast('Đã sao chép tất cả','📋'));
+  // chỉ lấy span có nút copy bên cạnh (có icon-btn anh em)
+  const items=Array.from($('gen-keys-box').querySelectorAll('.gen-row'))
+    .filter(r=>r.querySelector('.icon-btn'))
+    .map(r=>r.querySelector('span').textContent.trim())
+    .filter(Boolean);
+  if(!items.length){ toast('Không có key để sao chép','⚠️'); return; }
+  navigator.clipboard.writeText(items.join('\n')).then(()=>toast(`Đã sao chép ${items.length} key`,'📋'));
 }
 
 // ── GET LICENSE ──
@@ -798,21 +844,43 @@ async function resetHwid(){
 }
 
 // ── LIST ──
+function parseKeys(data){
+  if(Array.isArray(data))              return data;
+  if(Array.isArray(data.keys))         return data.keys;
+  if(Array.isArray(data.data))         return data.data;
+  if(Array.isArray(data.licenses))     return data.licenses;
+  if(Array.isArray(data.items))        return data.items;
+  if(Array.isArray(data.results))      return data.results;
+  if(Array.isArray(data.list))         return data.list;
+  // object map { key: {...}, key2: {...} }
+  const vals = Object.values(data);
+  if(vals.length && typeof vals[0]==='object' && !Array.isArray(vals[0])) return vals;
+  return [];
+}
+
 async function listLicenses(){
+  const rawCard=$('list-raw-card'), rawOut=$('list-raw-out');
   try{
-    const {data,status,ok}=await call('/admin/list?pageSize=200');
+    const {data,status,ok}=await call('/admin/list?pageSize=500');
+    // luôn show raw
+    rawCard.style.display='';
+    setOutput(rawOut, data, status);
     if(ok){
-      allKeys=data.keys||data.data||(Array.isArray(data)?data:[]);
-      $('list-count').textContent=allKeys.length;
-      $('nav-total').textContent=allKeys.length;
+      allKeys = parseKeys(data);
+      $('list-count').textContent = allKeys.length;
+      $('nav-total').textContent  = allKeys.length;
       computeStats(allKeys);
       filterTable();
       appendLog(`Tải ${allKeys.length} key thành công`,'ok');
       toast(`Đã tải ${allKeys.length} key`,'📋');
     } else {
       toast('Lỗi: HTTP '+status,'❌');
+      appendLog('Tải danh sách thất bại: HTTP '+status,'err');
     }
-  }catch(e){ toast('Lỗi: '+e.message,'❌'); }
+  }catch(e){
+    toast('Lỗi: '+e.message,'❌');
+    appendLog('Exception listLicenses: '+e.message,'err');
+  }
 }
 
 function setFilter(f, el){
@@ -845,28 +913,62 @@ function renderTable(keys){
     return;
   }
   tbody.innerHTML=keys.map(k=>{
-    const key=k.key||k.license||'—';
-    const type=k.type||'—';
-    const status=(k.status||(k.active?'active':'unknown')).toLowerCase();
-    const exp=k.expiresAt?new Date(k.expiresAt).toLocaleDateString('vi-VN'):'—';
-    const hwid=k.hwid?k.hwid.substring(0,12)+'…':'—';
-    const note=k.note||'—';
-    const sc=status==='active'?'b-active':status==='revoked'?'b-revoked':status==='expired'?'b-expired':'b-unknown';
-    const tc='b-'+(type.toLowerCase());
-    return `<tr>
-      <td><span class="mono">${key}</span></td>
+    const key    = k.key||k.license||k.id||'—';
+    const type   = k.type||'—';
+    const status = (k.status||(k.active?'active':'unknown')).toLowerCase();
+    const exp    = k.expiresAt?new Date(k.expiresAt).toLocaleDateString('vi-VN'):'—';
+    const hwid   = k.hwid ? k.hwid.substring(0,14)+'…' : '<span style="color:var(--text-muted);font-style:italic">chưa gắn</span>';
+    const note   = k.note||'—';
+    const safe   = key.replace(/'/g,"\\'");
+    const sc = status==='active'?'b-active':status==='revoked'?'b-revoked':status==='expired'?'b-expired':'b-unknown';
+    const tc = ['free','daily','weekly','monthly','lifetime'].includes(type.toLowerCase()) ? 'b-'+type.toLowerCase() : 'b-unknown';
+    const isRevoked = status==='revoked';
+    return `<tr id="row-${safe}">
+      <td><span class="mono" style="font-size:11.5px">${key}</span></td>
       <td><span class="badge ${tc}">${type}</span></td>
       <td><span class="badge ${sc}">${status}</span></td>
-      <td style="font-size:12px">${exp}</td>
-      <td style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">${hwid}</td>
-      <td style="font-size:12px;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${note}</td>
+      <td style="font-size:12px;white-space:nowrap">${exp}</td>
+      <td style="font-family:var(--mono);font-size:11px">${hwid}</td>
+      <td style="font-size:12px;color:var(--text-muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${note}">${note}</td>
       <td>
-        <button class="icon-btn" title="Sao chép key" onclick="cp('${key}')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        </button>
+        <div style="display:flex;gap:4px;justify-content:center;align-items:center">
+          <button class="icon-btn" title="Sao chép key" onclick="cp('${safe}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="icon-btn" title="Reset HWID" onclick="inlineResetHwid('${safe}')" style="color:var(--green)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+          </button>
+          ${!isRevoked?`<button class="icon-btn" title="Thu hồi key" onclick="inlineRevoke('${safe}')" style="color:var(--red)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </button>`:'<span style="font-size:10px;color:var(--text-muted);padding:0 4px">—</span>'}
+        </div>
       </td>
     </tr>`;
   }).join('');
+}
+
+// inline actions trực tiếp từ bảng
+async function inlineRevoke(key){
+  if(!confirm(`Thu hồi key:\n${key}?`)) return;
+  try{
+    const {status,ok}=await call('/admin/revoke',{method:'POST',body:JSON.stringify({key})});
+    if(ok){
+      toast('Đã thu hồi key','🚫');
+      appendLog('Thu hồi: '+key,'warn');
+      await listLicenses(); // refresh
+    } else toast('Lỗi thu hồi: HTTP '+status,'❌');
+  }catch(e){ toast('Lỗi: '+e.message,'❌'); }
+}
+
+async function inlineResetHwid(key){
+  try{
+    const {status,ok}=await call('/admin/reset-hwid',{method:'POST',body:JSON.stringify({key})});
+    if(ok){
+      toast('Đã reset HWID','✅');
+      appendLog('Reset HWID: '+key,'ok');
+      await listLicenses(); // refresh
+    } else toast('Lỗi reset: HTTP '+status,'❌');
+  }catch(e){ toast('Lỗi: '+e.message,'❌'); }
 }
 
 function computeStats(keys){
@@ -885,10 +987,7 @@ function computeStats(keys){
 async function refreshStats(){
   try{
     const {data,ok}=await call('/admin/list?pageSize=500');
-    if(ok){
-      const keys=data.keys||data.data||(Array.isArray(data)?data:[]);
-      computeStats(keys);
-    }
+    if(ok){ computeStats(parseKeys(data)); }
   }catch{}
 }
 
