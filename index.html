@@ -1,135 +1,925 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>License Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-body{font-family:system-ui,-apple-system,sans-serif;max-width:980px;margin:0 auto;padding:18px;background:#f6f7f9;color:#111}
-section{background:#fff;border:1px solid #ddd;border-radius:14px;padding:16px;margin:12px 0}
-input,select,button{font:inherit;padding:10px;margin:4px 0;border-radius:8px;border:1px solid #ccc}
-input,select{width:100%;box-sizing:border-box}
-button{cursor:pointer;background:#111;color:#fff;border:0;padding:10px 14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-pre{background:#111;color:#eee;border-radius:10px;padding:14px;white-space:pre-wrap;overflow:auto}
-small{color:#666}
+:root {
+  --bg:          #080a0f;
+  --surface:     #0e1118;
+  --surface2:    #141820;
+  --surface3:    #1a1f2e;
+  --border:      #1e2436;
+  --border-hi:   #2a3350;
+  --text:        #dde3f0;
+  --text-muted:  #4a5470;
+  --text-dim:    #7a87a8;
+  --accent:      #4f7cff;
+  --accent-soft: rgba(79,124,255,.14);
+  --accent-glow: rgba(79,124,255,.28);
+  --green:       #2ecc71;
+  --green-soft:  rgba(46,204,113,.12);
+  --red:         #e74c3c;
+  --red-soft:    rgba(231,76,60,.12);
+  --yellow:      #f0b429;
+  --yellow-soft: rgba(240,180,41,.12);
+  --purple:      #a78bfa;
+  --purple-soft: rgba(167,139,250,.12);
+  --r:           10px;
+  --r-sm:        7px;
+  --font:        'Inter', system-ui, sans-serif;
+  --mono:        'JetBrains Mono', monospace;
+  --shadow:      0 4px 24px rgba(0,0,0,.5);
+  --shadow-sm:   0 2px 10px rgba(0,0,0,.3);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13.5px;line-height:1.6;overflow:hidden}
+
+/* ── LAYOUT ── */
+.shell{display:grid;grid-template-columns:236px 1fr;grid-template-rows:52px 1fr;height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{
+  grid-column:1/-1;
+  display:flex;align-items:center;padding:0 20px;gap:14px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:relative;z-index:10;
+}
+.topbar::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,var(--accent) 40%,var(--purple) 70%,transparent 100%);
+  opacity:.35;
+}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;letter-spacing:-.02em}
+.logo-icon{
+  width:28px;height:28px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 14px var(--accent-glow);
+}
+.logo-icon svg{color:#fff}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.conn-pill{
+  display:flex;align-items:center;gap:7px;
+  padding:5px 12px;border-radius:99px;
+  background:var(--surface2);border:1px solid var(--border);
+  font-size:12px;color:var(--text-muted);cursor:pointer;
+  transition:border-color .2s;
+}
+.conn-pill:hover{border-color:var(--border-hi)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted);transition:all .3s;flex-shrink:0}
+.status-dot.online{background:var(--green);box-shadow:0 0 8px var(--green)}
+.status-dot.error{background:var(--red);box-shadow:0 0 8px var(--red)}
+.status-dot.pulse{animation:dotpulse 1.5s ease-in-out infinite}
+@keyframes dotpulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:12px 0;
+  overflow-y:auto;
+}
+.sidebar-section{padding:16px 16px 6px;font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--text-muted);text-transform:uppercase}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 16px;margin:1px 8px;border-radius:var(--r-sm);
+  cursor:pointer;color:var(--text-dim);font-size:13px;font-weight:450;
+  transition:all .15s;border:none;background:none;width:calc(100% - 16px);text-align:left;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:500}
+.nav-item .icon{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.nav-item.active .icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:600;padding:2px 7px;border-radius:99px}
+
+/* ── MAIN ── */
+.main{overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px;background:var(--bg)}
+
+/* ── PAGE ── */
+.page{display:none;flex-direction:column;gap:18px;animation:fadein .2s ease}
+.page.active{display:flex}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.page-title{font-size:18px;font-weight:700;letter-spacing:-.02em}
+.page-sub{font-size:12.5px;color:var(--text-muted);margin-top:3px}
+
+/* ── CARDS ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:20px;
+  transition:border-color .2s;
+}
+.card:hover{border-color:var(--border-hi)}
+.card-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:600;color:var(--text);
+  margin-bottom:16px;padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
+.card-title .ct-icon{color:var(--accent)}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px;cursor:default;transition:all .2s;position:relative;overflow:hidden;
+}
+.stat::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at top right, var(--c,var(--accent)) 0%, transparent 60%);
+  opacity:.05;transition:opacity .2s;
+}
+.stat:hover{border-color:var(--border-hi)}
+.stat:hover::before{opacity:.1}
+.stat-label{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+.stat-val{font-family:var(--mono);font-size:26px;font-weight:500;margin:10px 0 4px;color:var(--text);letter-spacing:-.02em;transition:color .3s}
+.stat-hint{font-size:11px;color:var(--text-muted)}
+.s-blue {--c:var(--accent);} .s-blue  .stat-val{color:var(--accent)}
+.s-green{--c:var(--green);} .s-green .stat-val{color:var(--green)}
+.s-red  {--c:var(--red);}   .s-red   .stat-val{color:var(--red)}
+.s-yel  {--c:var(--yellow)}.s-yel   .stat-val{color:var(--yellow)}
+
+/* ── FORMS ── */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:11.5px;font-weight:500;color:var(--text-dim)}
+.field input,.field select,.field textarea{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);
+  color:var(--text);font-family:var(--font);font-size:13px;
+  padding:9px 12px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);
+}
+.field select option{background:var(--surface2)}
+.field input::placeholder{color:var(--text-muted)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 16px;border-radius:var(--r-sm);
+  font-family:var(--font);font-size:13px;font-weight:500;
+  border:none;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 0 18px var(--accent-glow)}
+.btn-primary:hover{background:#6b8eff;box-shadow:0 0 26px var(--accent-glow)}
+.btn-ghost{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface3);color:var(--text)}
+.btn-danger{background:var(--red-soft);color:var(--red);border:1px solid rgba(231,76,60,.2)}
+.btn-danger:hover{background:rgba(231,76,60,.2)}
+.btn-success{background:var(--green-soft);color:var(--green);border:1px solid rgba(46,204,113,.2)}
+.btn-success:hover{background:rgba(46,204,113,.2)}
+.btn-warn{background:var(--yellow-soft);color:var(--yellow);border:1px solid rgba(240,180,41,.2)}
+.btn-warn:hover{background:rgba(240,180,41,.2)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:5px;border-radius:6px;transition:color .15s,background .15s;line-height:0}
+.icon-btn:hover{color:var(--text);background:var(--surface3)}
+
+/* ── OUTPUT ── */
+.output-box{
+  background:#050709;border:1px solid var(--border);border-radius:var(--r);
+  padding:14px;font-family:var(--mono);font-size:12px;color:#7fc8a0;
+  white-space:pre-wrap;overflow:auto;max-height:340px;min-height:60px;line-height:1.8;
+}
+.log-ts{color:var(--text-muted);margin-right:10px;user-select:none}
+.log-ok{color:var(--green)}.log-err{color:var(--red)}.log-info{color:var(--accent)}.log-data{color:#b0bcd8}.log-warn{color:var(--yellow)}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{
+  background:var(--surface2);color:var(--text-muted);font-weight:500;
+  font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2);color:var(--text)}
+.mono{font-family:var(--mono);font-size:11.5px;color:var(--text);letter-spacing:.03em}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:500;white-space:nowrap}
+.b-active  {background:var(--green-soft); color:var(--green)}
+.b-revoked {background:var(--red-soft);   color:var(--red)}
+.b-expired {background:var(--yellow-soft);color:var(--yellow)}
+.b-unknown {background:var(--surface3);   color:var(--text-dim)}
+.b-weekly  {background:var(--accent-soft);color:var(--accent)}
+.b-monthly {background:rgba(99,179,237,.12);color:#63b3ed}
+.b-lifetime{background:var(--purple-soft);color:var(--purple)}
+.b-daily   {background:rgba(110,231,183,.1);color:#6ee7b7}
+.b-free    {background:var(--surface3);   color:var(--text-muted)}
+
+/* ── GENERATED KEY BOX ── */
+.gen-box{
+  background:#04060a;border:1px solid rgba(79,124,255,.2);border-radius:var(--r);
+  padding:12px;font-family:var(--mono);font-size:12px;color:#7ab0ff;
+  max-height:220px;overflow-y:auto;line-height:1;
+}
+.gen-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 4px;border-bottom:1px solid rgba(79,124,255,.07);
+}
+.gen-row:last-child{border-bottom:none}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:40px 0;color:var(--text-muted)}
+.empty svg{margin-bottom:10px;opacity:.25}
+.empty p{font-size:12.5px}
+
+/* ── DETAIL GRID ── */
+.detail-grid{display:flex;flex-direction:column;gap:0}
+.detail-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 0;border-bottom:1px solid var(--border);
+}
+.detail-row:last-child{border-bottom:none}
+.detail-label{font-size:12px;color:var(--text-muted)}
+.detail-val{font-size:12.5px;color:var(--text);text-align:right;word-break:break-all;max-width:60%}
+.detail-val.mono{font-family:var(--mono);font-size:11.5px}
+
+/* ── SEARCH BAR ── */
+.search-row{display:flex;gap:10px;align-items:center;margin-bottom:4px}
+.search-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--font);font-size:13px;padding:8px 12px;outline:none;transition:border-color .2s}
+.search-row input:focus{border-color:var(--accent)}
+.search-row input::placeholder{color:var(--text-muted)}
+
+/* ── FILTER CHIPS ── */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{
+  padding:4px 11px;border-radius:99px;font-size:11.5px;font-weight:500;cursor:pointer;
+  background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);
+  transition:all .15s;
+}
+.chip:hover{border-color:var(--border-hi);color:var(--text)}
+.chip.active-chip{background:var(--accent-soft);color:var(--accent);border-color:rgba(79,124,255,.3)}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+.toast{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface2);border:1px solid var(--border-hi);border-radius:var(--r-sm);
+  padding:11px 16px;font-size:13px;color:var(--text);
+  box-shadow:var(--shadow);animation:tin .22s ease;min-width:240px;
+}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.toast.tout{animation:tout .22s ease forwards}
+@keyframes tout{to{opacity:0;transform:translateY(10px)}}
+.toast-icon{font-size:15px;flex-shrink:0}
+
+/* ── SPINNER ── */
+.spin{width:13px;height:13px;border:2px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:s .7s linear infinite;display:inline-block;flex-shrink:0}
+@keyframes s{to{transform:rotate(360deg)}}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:4px 0}
+
+/* ── SECTION LABEL ── */
+.section-label{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px}
+
+/* ── responsive ── */
+@media(max-width:760px){
+  .shell{grid-template-columns:1fr;grid-template-rows:52px 44px 1fr}
+  .sidebar{flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--border);padding:4px 8px}
+  .sidebar-section{display:none}
+  .nav-item{white-space:nowrap;width:auto;padding:7px 12px}
+  .nav-item.active{background:var(--accent-soft)}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .fg2,.fg3{grid-template-columns:1fr}
+  .main{padding:16px}
+}
 </style>
 </head>
 <body>
-<h1>License Admin</h1>
+<div class="shell">
 
-<section>
-  <h3>Connection</h3>
-  <label>Worker URL</label>
-  <input id="url" placeholder="https://license-api.example.workers.dev">
-  <label>Admin token</label>
-  <input id="token" type="password" placeholder="Bearer token value">
-  <button onclick="health()">Test Worker</button>
-</section>
-
-<section>
-  <h3>Generate licenses</h3>
-  <div class="grid">
-    <div><label>Count</label><input id="count" type="number" min="1" max="100" value="1"></div>
-    <div><label>Type</label>
-      <select id="type">
-        <option value="free">free</option>
-        <option value="daily">daily</option>
-        <option value="weekly" selected>weekly</option>
-        <option value="monthly">monthly</option>
-        <option value="lifetime">lifetime</option>
-      </select>
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    License Admin
+  </div>
+  <div class="topbar-right">
+    <div class="conn-pill" onclick="switchPage('connection',document.querySelector('[data-page=connection]'))">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Chưa kết nối</span>
     </div>
   </div>
-  <label>Optional exact expiry</label>
-  <input id="expires" type="datetime-local">
-  <label>Note</label>
-  <input id="note" placeholder="Optional note">
-  <button onclick="generate()">Generate</button>
-</section>
+</header>
 
-<section>
-  <h3>Manage</h3>
-  <input id="key" placeholder="LICENSE-KEY">
-  <div class="grid">
-    <button onclick="getLicense()">Get license</button>
-    <button onclick="revoke()">Revoke</button>
-    <button onclick="resetHwid()">Reset HWID</button>
-    <button onclick="listLicenses()">List licenses</button>
-  </div>
-</section>
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-section">Tổng quan</div>
+  <button class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard',this)">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </button>
+  <div class="sidebar-section">Quản lý Key</div>
+  <button class="nav-item" data-page="generate" onclick="switchPage('generate',this)">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Tạo Key
+  </button>
+  <button class="nav-item" data-page="manage" onclick="switchPage('manage',this)">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Tra cứu Key
+  </button>
+  <button class="nav-item" data-page="list" onclick="switchPage('list',this);listLicenses()">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    Tất cả Key
+    <span class="nav-badge" id="nav-total">—</span>
+  </button>
+  <div class="sidebar-section" style="margin-top:auto">Cài đặt</div>
+  <button class="nav-item" data-page="connection" onclick="switchPage('connection',this)">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    Kết nối
+  </button>
+</nav>
 
-<section>
-  <h3>Output</h3>
-  <pre id="out">Ready.</pre>
-</section>
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ── DASHBOARD ── -->
+  <section class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Tổng quan hệ thống license</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="refreshStats()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+        Làm mới
+      </button>
+    </div>
+    <div class="stats-row">
+      <div class="stat s-blue">
+        <div class="stat-label">Tổng số Key</div>
+        <div class="stat-val" id="stat-total">—</div>
+        <div class="stat-hint">tất cả thời gian</div>
+      </div>
+      <div class="stat s-green">
+        <div class="stat-label">Đang hoạt động</div>
+        <div class="stat-val" id="stat-active">—</div>
+        <div class="stat-hint">hiện còn hiệu lực</div>
+      </div>
+      <div class="stat s-red">
+        <div class="stat-label">Đã thu hồi</div>
+        <div class="stat-val" id="stat-revoked">—</div>
+        <div class="stat-hint">bị vô hiệu thủ công</div>
+      </div>
+      <div class="stat s-yel">
+        <div class="stat-label">Hết hạn</div>
+        <div class="stat-val" id="stat-expired">—</div>
+        <div class="stat-hint">quá ngày hết hạn</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Nhật ký hoạt động
+      </div>
+      <div class="output-box" id="activity-log" style="min-height:130px">Chờ kết nối…</div>
+    </div>
+  </section>
+
+  <!-- ── TẠO KEY ── -->
+  <section class="page" id="page-generate">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Tạo Key</div>
+        <div class="page-sub">Tạo hàng loạt license key</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        Thông số Key
+      </div>
+      <div class="fg2">
+        <div class="field">
+          <label>Số lượng</label>
+          <input id="count" type="number" min="1" max="100" value="1" placeholder="1 – 100">
+        </div>
+        <div class="field">
+          <label>Loại</label>
+          <select id="type">
+            <option value="free">Free – miễn phí</option>
+            <option value="daily">Daily – 1 ngày</option>
+            <option value="weekly" selected>Weekly – 7 ngày</option>
+            <option value="monthly">Monthly – 30 ngày</option>
+            <option value="lifetime">Lifetime – vĩnh viễn</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ngày hết hạn tùy chỉnh (không bắt buộc)</label>
+        <input id="expires" type="datetime-local">
+      </div>
+      <div class="field">
+        <label>Ghi chú</label>
+        <input id="note" placeholder="Nhãn tuỳ chọn cho lô này">
+      </div>
+      <button class="btn btn-primary" onclick="generate()" id="btn-gen">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Tạo Key
+      </button>
+    </div>
+    <!-- kết quả -->
+    <div class="card" id="gen-result" style="display:none">
+      <div class="card-title" style="justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:8px">
+          <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          Đã tạo — <span id="gen-count-lbl" style="color:var(--accent)">0 key</span>
+        </span>
+        <button class="btn btn-ghost btn-sm" onclick="copyAllGenKeys()">Sao chép tất cả</button>
+      </div>
+      <div class="gen-box" id="gen-keys-box"></div>
+    </div>
+  </section>
+
+  <!-- ── TRA CỨU ── -->
+  <section class="page" id="page-manage">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Tra cứu Key</div>
+        <div class="page-sub">Xem thông tin, thu hồi hoặc reset HWID</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Nhập License Key
+      </div>
+      <div class="field">
+        <label>License Key</label>
+        <input id="key" placeholder="LICENSE-XXXX-XXXX-XXXX" spellcheck="false">
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="getLicense()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Xem thông tin
+        </button>
+        <button class="btn btn-success" onclick="resetHwid()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+          Reset HWID
+        </button>
+        <button class="btn btn-danger" onclick="revoke()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          Thu hồi Key
+        </button>
+      </div>
+    </div>
+    <!-- chi tiết -->
+    <div class="card" id="key-detail-card" style="display:none">
+      <div class="card-title">
+        <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5"/></svg>
+        Thông tin Key
+      </div>
+      <div class="detail-grid" id="key-detail-body"></div>
+    </div>
+    <!-- raw response -->
+    <div class="card">
+      <div class="card-title">
+        <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Phản hồi API
+      </div>
+      <div class="output-box" id="out">Chưa có yêu cầu nào.</div>
+    </div>
+  </section>
+
+  <!-- ── TẤT CẢ KEY ── -->
+  <section class="page" id="page-list">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Tất cả Key</div>
+        <div class="page-sub">Đã tải: <span id="list-count" style="color:var(--accent)">—</span> key</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="listLicenses()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+        Làm mới
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="search-row">
+        <input id="search-input" placeholder="Tìm theo key, HWID, ghi chú…" oninput="filterTable()">
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">Xuất CSV</button>
+      </div>
+      <div class="filter-row" id="filter-chips">
+        <span class="chip active-chip" data-f="all" onclick="setFilter('all',this)">Tất cả</span>
+        <span class="chip" data-f="active"  onclick="setFilter('active',this)">Hoạt động</span>
+        <span class="chip" data-f="revoked" onclick="setFilter('revoked',this)">Thu hồi</span>
+        <span class="chip" data-f="expired" onclick="setFilter('expired',this)">Hết hạn</span>
+        <span class="chip" data-f="weekly"  onclick="setFilter('weekly',this)">Weekly</span>
+        <span class="chip" data-f="monthly" onclick="setFilter('monthly',this)">Monthly</span>
+        <span class="chip" data-f="lifetime" onclick="setFilter('lifetime',this)">Lifetime</span>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>License Key</th>
+            <th>Loại</th>
+            <th>Trạng thái</th>
+            <th>Hết hạn</th>
+            <th>HWID</th>
+            <th>Ghi chú</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="keys-tbody">
+          <tr><td colspan="7"><div class="empty">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <p>Nhấn "Làm mới" để tải danh sách</p>
+          </div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── KẾT NỐI ── -->
+  <section class="page" id="page-connection">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Kết nối</div>
+        <div class="page-sub">Cấu hình Cloudflare Worker endpoint</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Worker Config
+      </div>
+      <div class="field">
+        <label>Worker URL</label>
+        <input id="url" placeholder="https://license-api.example.workers.dev" spellcheck="false">
+      </div>
+      <div class="field">
+        <label>Admin Token</label>
+        <input id="token" type="password" placeholder="Bearer token">
+      </div>
+      <button class="btn btn-primary" onclick="health()" id="btn-health">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Kiểm tra kết nối
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Phản hồi
+      </div>
+      <div class="output-box" id="conn-out">Chưa có yêu cầu.</div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
 
 <script>
+// ── STATE ──
+let allKeys = [];
+let activeFilter = 'all';
+
+// ── UTILS ──
 const $ = id => document.getElementById(id);
+const ts = () => new Date().toLocaleTimeString('vi-VN');
 
 function config(){
   return {
-    url: $("url").value.trim().replace(/\/+$/,""),
-    token: $("token").value.trim()
+    url: $('url').value.trim().replace(/\/+$/,''),
+    token: $('token').value.trim()
   };
 }
 
-async function call(path, options={}){
+function toast(msg, icon='✓', dur=3000){
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<span class="toast-icon">${icon}</span><span>${msg}</span>`;
+  $('toast-container').appendChild(el);
+  setTimeout(()=>{ el.classList.add('tout'); setTimeout(()=>el.remove(),250); }, dur);
+}
+
+function appendLog(msg, type='info'){
+  const box = $('activity-log');
+  if(box.textContent==='Chờ kết nối…') box.innerHTML='';
+  const line = document.createElement('span');
+  line.innerHTML = `<span class="log-ts">${ts()}</span><span class="log-${type}">${msg}</span>\n`;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+function setOutput(el, data, status){
+  const type = status>=200&&status<300 ? 'ok' : 'err';
+  el.innerHTML = `<span class="log-${type}">HTTP ${status}</span>\n<span class="log-data">${JSON.stringify(data,null,2)}</span>`;
+}
+
+function setStatus(state){ // 'online'|'error'|'loading'
+  const dot = $('status-dot'), txt = $('status-text');
+  dot.className = 'status-dot ' + (state==='loading'?'pulse':state==='online'?'online':'error');
+  txt.textContent = state==='online'?'Đã kết nối':state==='loading'?'Đang kiểm tra…':'Chưa kết nối';
+}
+
+function switchPage(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  $('page-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+// ── API ──
+async function call(path, opts={}){
   const c = config();
-  if(!c.url) throw new Error("Enter Worker URL first");
-  const headers = {
-    "content-type":"application/json",
-    "authorization":"Bearer "+c.token,
-    ...(options.headers||{})
-  };
-  const r = await fetch(c.url+path,{...options,headers});
-  const text = await r.text();
-  let data;
-  try { data = JSON.parse(text); } catch { data = {raw:text}; }
-  $("out").textContent = JSON.stringify({http:r.status,data},null,2);
-  return data;
+  if(!c.url){ toast('Nhập Worker URL trước','⚠️'); throw new Error('no url'); }
+  const headers = {'content-type':'application/json','authorization':'Bearer '+c.token,...(opts.headers||{})};
+  const r = await fetch(c.url+path, {...opts, headers});
+  const txt = await r.text();
+  let data; try{ data=JSON.parse(txt); }catch{ data={raw:txt}; }
+  return {data, status:r.status, ok:r.ok};
 }
 
+// ── HEALTH ──
 async function health(){
-  const c=config();
-  const r=await fetch(c.url+"/api/health");
-  const d=await r.json();
-  $("out").textContent=JSON.stringify({http:r.status,data:d},null,2);
+  setStatus('loading');
+  $('btn-health').disabled=true;
+  try{
+    const c=config();
+    if(!c.url){ toast('Nhập Worker URL','⚠️'); return; }
+    const r=await fetch(c.url+'/api/health');
+    const d=await r.json();
+    setOutput($('conn-out'), d, r.status);
+    if(r.ok){
+      setStatus('online');
+      toast('Worker đang hoạt động','✅');
+      appendLog('Health check OK — worker online','ok');
+      refreshStats();
+    } else {
+      setStatus('error');
+      toast('Worker trả về '+r.status,'❌');
+      appendLog('Health check thất bại: HTTP '+r.status,'err');
+    }
+  } catch(e){
+    setStatus('error');
+    setOutput($('conn-out'),{error:e.message},0);
+    toast('Kết nối thất bại','❌');
+    appendLog('Lỗi kết nối: '+e.message,'err');
+  } finally{ $('btn-health').disabled=false; }
 }
 
-function generate(){
-  const e=$("expires").value;
-  return call("/admin/generate",{
-    method:"POST",
-    body:JSON.stringify({
-      count:Number($("count").value||1),
-      type:$("type").value,
-      expiresAt:e?new Date(e).toISOString():"",
-      note:$("note").value
-    })
+// ── GENERATE ──
+async function generate(){
+  const btn=$('btn-gen');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Đang tạo…';
+  try{
+    const e=$('expires').value;
+    const {data,status,ok}=await call('/admin/generate',{
+      method:'POST',
+      body:JSON.stringify({
+        count: Number($('count').value||1),
+        type: $('type').value,
+        expiresAt: e?new Date(e).toISOString():'',
+        note: $('note').value
+      })
+    });
+    if(ok){
+      const keys=data.keys||data.data||(Array.isArray(data)?data:[]);
+      const n=keys.length||data.count||1;
+      toast(`Đã tạo ${n} key`,'🔑');
+      appendLog(`Tạo ${n} key thành công [${$('type').value}]`,'ok');
+      renderGenKeys(keys);
+      refreshStats();
+    } else {
+      toast('Lỗi: HTTP '+status,'❌');
+      appendLog('Tạo key thất bại: HTTP '+status,'err');
+    }
+  }catch(e){ toast('Lỗi: '+e.message,'❌'); }
+  finally{
+    btn.disabled=false;
+    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Tạo Key';
+  }
+}
+
+function renderGenKeys(keys){
+  const box=$('gen-keys-box'), card=$('gen-result');
+  box.innerHTML='';
+  if(!keys||!keys.length){ card.style.display='none'; return; }
+  card.style.display='';
+  $('gen-count-lbl').textContent=keys.length+' key';
+  keys.forEach(k=>{
+    const s = typeof k==='string'?k:(k.key||k.license||JSON.stringify(k));
+    const row=document.createElement('div'); row.className='gen-row';
+    row.innerHTML=`<span>${s}</span>
+      <button class="icon-btn" title="Sao chép" onclick="cp('${s}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>`;
+    box.appendChild(row);
   });
 }
 
-function getLicense(){
-  return call("/admin/get?key="+encodeURIComponent($("key").value.trim()));
+function copyAllGenKeys(){
+  const items=Array.from($('gen-keys-box').querySelectorAll('.gen-row span')).map(s=>s.textContent);
+  navigator.clipboard.writeText(items.join('\n')).then(()=>toast('Đã sao chép tất cả','📋'));
 }
 
-function revoke(){
-  return call("/admin/revoke",{
-    method:"POST",
-    body:JSON.stringify({key:$("key").value.trim()})
+// ── GET LICENSE ──
+async function getLicense(){
+  const k=$('key').value.trim();
+  if(!k){ toast('Nhập license key','⚠️'); return; }
+  try{
+    const {data,status,ok}=await call('/admin/get?key='+encodeURIComponent(k));
+    setOutput($('out'),data,status);
+    if(ok) renderDetail(data);
+    else { toast('Không tìm thấy key','❌'); $('key-detail-card').style.display='none'; }
+    appendLog(`Tra cứu: ${k} → HTTP ${status}`, ok?'ok':'err');
+  }catch(e){ toast('Lỗi: '+e.message,'❌'); }
+}
+
+function renderDetail(d){
+  const kd=d.data||d;
+  const rows=[
+    ['License Key', kd.key||'—', true],
+    ['Loại', kd.type||'—', false],
+    ['Trạng thái', kd.status||(kd.active?'active':'—'), false],
+    ['HWID', kd.hwid||'(chưa đăng ký)', true],
+    ['Hết hạn', kd.expiresAt?new Date(kd.expiresAt).toLocaleString('vi-VN'):'—', false],
+    ['Ghi chú', kd.note||'—', false],
+    ['Ngày tạo', kd.createdAt?new Date(kd.createdAt).toLocaleString('vi-VN'):'—', false],
+  ];
+  $('key-detail-body').innerHTML=rows.map(([l,v,m])=>
+    `<div class="detail-row">
+      <span class="detail-label">${l}</span>
+      <span class="detail-val${m?' mono':''}">${v}</span>
+    </div>`
+  ).join('');
+  $('key-detail-card').style.display='';
+}
+
+// ── REVOKE ──
+async function revoke(){
+  const k=$('key').value.trim();
+  if(!k){ toast('Nhập license key','⚠️'); return; }
+  if(!confirm(`Thu hồi key: ${k}?`)) return;
+  try{
+    const {status,ok}=await call('/admin/revoke',{method:'POST',body:JSON.stringify({key:k})});
+    setOutput($('out'),{},status);
+    if(ok){ toast('Đã thu hồi key','🚫'); appendLog('Thu hồi: '+k,'warn'); }
+    else toast('Lỗi thu hồi: HTTP '+status,'❌');
+  }catch(e){ toast('Lỗi: '+e.message,'❌'); }
+}
+
+// ── RESET HWID ──
+async function resetHwid(){
+  const k=$('key').value.trim();
+  if(!k){ toast('Nhập license key','⚠️'); return; }
+  try{
+    const {status,ok}=await call('/admin/reset-hwid',{method:'POST',body:JSON.stringify({key:k})});
+    setOutput($('out'),{},status);
+    if(ok){ toast('Đã reset HWID','✅'); appendLog('Reset HWID: '+k,'ok'); }
+    else toast('Lỗi reset: HTTP '+status,'❌');
+  }catch(e){ toast('Lỗi: '+e.message,'❌'); }
+}
+
+// ── LIST ──
+async function listLicenses(){
+  try{
+    const {data,status,ok}=await call('/admin/list?pageSize=200');
+    if(ok){
+      allKeys=data.keys||data.data||(Array.isArray(data)?data:[]);
+      $('list-count').textContent=allKeys.length;
+      $('nav-total').textContent=allKeys.length;
+      computeStats(allKeys);
+      filterTable();
+      appendLog(`Tải ${allKeys.length} key thành công`,'ok');
+      toast(`Đã tải ${allKeys.length} key`,'📋');
+    } else {
+      toast('Lỗi: HTTP '+status,'❌');
+    }
+  }catch(e){ toast('Lỗi: '+e.message,'❌'); }
+}
+
+function setFilter(f, el){
+  activeFilter=f;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active-chip'));
+  el.classList.add('active-chip');
+  filterTable();
+}
+
+function filterTable(){
+  const q=$('search-input').value.toLowerCase();
+  let rows=allKeys.filter(k=>{
+    if(activeFilter!=='all'){
+      const s=(k.status||'').toLowerCase();
+      const t=(k.type||'').toLowerCase();
+      if(!([s,t].includes(activeFilter))) return false;
+    }
+    if(!q) return true;
+    return [k.key,k.hwid,k.note,k.type,k.status].filter(Boolean).some(v=>v.toLowerCase().includes(q));
   });
+  renderTable(rows);
 }
 
-function resetHwid(){
-  return call("/admin/reset-hwid",{
-    method:"POST",
-    body:JSON.stringify({key:$("key").value.trim()})
-  });
+function renderTable(keys){
+  const tbody=$('keys-tbody');
+  if(!keys||!keys.length){
+    tbody.innerHTML=`<tr><td colspan="7"><div class="empty">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <p>Không có key nào</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=keys.map(k=>{
+    const key=k.key||k.license||'—';
+    const type=k.type||'—';
+    const status=(k.status||(k.active?'active':'unknown')).toLowerCase();
+    const exp=k.expiresAt?new Date(k.expiresAt).toLocaleDateString('vi-VN'):'—';
+    const hwid=k.hwid?k.hwid.substring(0,12)+'…':'—';
+    const note=k.note||'—';
+    const sc=status==='active'?'b-active':status==='revoked'?'b-revoked':status==='expired'?'b-expired':'b-unknown';
+    const tc='b-'+(type.toLowerCase());
+    return `<tr>
+      <td><span class="mono">${key}</span></td>
+      <td><span class="badge ${tc}">${type}</span></td>
+      <td><span class="badge ${sc}">${status}</span></td>
+      <td style="font-size:12px">${exp}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">${hwid}</td>
+      <td style="font-size:12px;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${note}</td>
+      <td>
+        <button class="icon-btn" title="Sao chép key" onclick="cp('${key}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
-function listLicenses(){
-  return call("/admin/list?pageSize=100");
+function computeStats(keys){
+  const total=keys.length;
+  const active=keys.filter(k=>(k.status||'').toLowerCase()==='active'||k.active===true).length;
+  const revoked=keys.filter(k=>(k.status||'').toLowerCase()==='revoked').length;
+  const expired=keys.filter(k=>(k.status||'').toLowerCase()==='expired').length;
+  animNum('stat-total',total);
+  animNum('stat-active',active);
+  animNum('stat-revoked',revoked);
+  animNum('stat-expired',expired);
+  $('nav-total').textContent=total;
+  $('list-count').textContent=total;
+}
+
+async function refreshStats(){
+  try{
+    const {data,ok}=await call('/admin/list?pageSize=500');
+    if(ok){
+      const keys=data.keys||data.data||(Array.isArray(data)?data:[]);
+      computeStats(keys);
+    }
+  }catch{}
+}
+
+function animNum(id,target){
+  const el=$(id); let cur=0;
+  const step=Math.max(1,Math.ceil(target/20));
+  const t=setInterval(()=>{
+    cur=Math.min(cur+step,target);
+    el.textContent=cur;
+    if(cur>=target) clearInterval(t);
+  },40);
+}
+
+// ── EXPORT CSV ──
+function exportCSV(){
+  if(!allKeys.length){ toast('Chưa có dữ liệu để xuất','⚠️'); return; }
+  const header='key,type,status,expiresAt,hwid,note';
+  const rows=allKeys.map(k=>[
+    k.key||'', k.type||'', k.status||'', k.expiresAt||'', k.hwid||'', (k.note||'').replace(/,/g,';')
+  ].join(','));
+  const blob=new Blob([header+'\n'+rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='licenses_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast('Đã xuất CSV','💾');
+}
+
+// ── CLIPBOARD ──
+function cp(text){
+  navigator.clipboard.writeText(text).then(()=>toast('Đã sao chép','📋'));
 }
 </script>
 </body>
