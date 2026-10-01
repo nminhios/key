@@ -97,9 +97,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 }
 .nav-item:hover{background:var(--surface2);color:var(--text)}
 .nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:500}
+.nav-item.danger-nav.active{background:var(--red-soft);color:var(--red)}
+.nav-item.danger-nav:hover{background:var(--red-soft);color:var(--red)}
 .nav-item .icon{width:16px;height:16px;flex-shrink:0;opacity:.7}
 .nav-item.active .icon{opacity:1}
 .nav-badge{margin-left:auto;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:600;padding:2px 7px;border-radius:99px}
+.nav-badge.red{background:var(--red-soft);color:var(--red)}
 
 /* ── MAIN ── */
 .main{overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px;background:var(--bg)}
@@ -128,6 +131,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
   border-bottom:1px solid var(--border);
 }
 .card-title .ct-icon{color:var(--accent)}
+.card-title .ct-icon-red{color:var(--red)}
 
 /* ── STATS ── */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -180,6 +184,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .btn-ghost:hover{background:var(--surface3);color:var(--text)}
 .btn-danger{background:var(--red-soft);color:var(--red);border:1px solid rgba(231,76,60,.2)}
 .btn-danger:hover{background:rgba(231,76,60,.2)}
+.btn-danger-solid{background:var(--red);color:#fff}
+.btn-danger-solid:hover{background:#c0392b}
 .btn-success{background:var(--green-soft);color:var(--green);border:1px solid rgba(46,204,113,.2)}
 .btn-success:hover{background:rgba(46,204,113,.2)}
 .btn-warn{background:var(--yellow-soft);color:var(--yellow);border:1px solid rgba(240,180,41,.2)}
@@ -188,6 +194,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .icon-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:5px;border-radius:6px;transition:color .15s,background .15s;line-height:0}
 .icon-btn:hover{color:var(--text);background:var(--surface3)}
+.icon-btn.del-btn{color:var(--red);opacity:.6}
+.icon-btn.del-btn:hover{color:var(--red);background:var(--red-soft);opacity:1}
+
+/* ── CONFIRM MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  animation:fadein .15s ease;
+}
+.modal-overlay.hidden{display:none}
+.modal{
+  background:var(--surface);border:1px solid var(--border-hi);border-radius:var(--r);
+  padding:24px;max-width:400px;width:calc(100% - 40px);box-shadow:var(--shadow);
+}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--red)}
+.modal-body{font-size:13px;color:var(--text-dim);margin-bottom:20px;line-height:1.6}
+.modal-key{font-family:var(--mono);font-size:12px;color:var(--text);background:var(--bg);padding:8px 12px;border-radius:var(--r-sm);margin:10px 0;border:1px solid var(--border);word-break:break-all}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
 
 /* ── OUTPUT ── */
 .output-box{
@@ -210,6 +234,7 @@ th{
 td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--surface2);color:var(--text)}
+tbody tr.deleted-row td{opacity:.55}
 .mono{font-family:var(--mono);font-size:11.5px;color:var(--text);letter-spacing:.03em}
 
 /* ── BADGES ── */
@@ -223,6 +248,7 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
 .b-lifetime{background:var(--purple-soft);color:var(--purple)}
 .b-daily   {background:rgba(110,231,183,.1);color:#6ee7b7}
 .b-free    {background:var(--surface3);   color:var(--text-muted)}
+.b-deleted {background:rgba(231,76,60,.08);color:#c0392b;border:1px dashed rgba(231,76,60,.25)}
 
 /* ── GENERATED KEY BOX ── */
 .gen-box{
@@ -267,6 +293,13 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
 }
 .chip:hover{border-color:var(--border-hi);color:var(--text)}
 .chip.active-chip{background:var(--accent-soft);color:var(--accent);border-color:rgba(79,124,255,.3)}
+
+/* ── DELETED PAGE BANNER ── */
+.danger-banner{
+  background:var(--red-soft);border:1px solid rgba(231,76,60,.2);border-radius:var(--r);
+  padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--red);
+}
+.danger-banner svg{flex-shrink:0}
 
 /* ── TOAST ── */
 #toast-container{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:9999}
@@ -343,6 +376,11 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     Tất cả Key
     <span class="nav-badge" id="nav-total">—</span>
+  </button>
+  <button class="nav-item danger-nav" data-page="deleted" onclick="switchPage('deleted',this);loadDeletedPage()">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    Key Đã Xoá
+    <span class="nav-badge red" id="nav-deleted">0</span>
   </button>
   <div class="sidebar-section" style="margin-top:auto">Cài đặt</div>
   <button class="nav-item" data-page="connection" onclick="switchPage('connection',this)">
@@ -439,7 +477,6 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
         Tạo Key
       </button>
     </div>
-    <!-- kết quả -->
     <div class="card" id="gen-result" style="display:none">
       <div class="card-title" style="justify-content:space-between">
         <span style="display:flex;align-items:center;gap:8px">
@@ -486,9 +523,12 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
           Thu hồi Key
         </button>
+        <button class="btn btn-danger-solid" onclick="deleteSingleFromManage()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Xoá vĩnh viễn
+        </button>
       </div>
     </div>
-    <!-- chi tiết -->
     <div class="card" id="key-detail-card" style="display:none">
       <div class="card-title">
         <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5"/></svg>
@@ -496,7 +536,6 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
       </div>
       <div class="detail-grid" id="key-detail-body"></div>
     </div>
-    <!-- raw response -->
     <div class="card">
       <div class="card-title">
         <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
@@ -556,13 +595,49 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
         </tbody>
       </table>
     </div>
-    <!-- raw response -->
     <div class="card" id="list-raw-card" style="display:none">
       <div class="card-title">
         <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         Phản hồi API thô
       </div>
       <div class="output-box" id="list-raw-out" style="max-height:200px"></div>
+    </div>
+  </section>
+
+  <!-- ── KEY ĐÃ XOÁ ── -->
+  <section class="page" id="page-deleted">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Key Đã Xoá</div>
+        <div class="page-sub">Lưu trữ cục bộ — <span id="deleted-count" style="color:var(--red)">0</span> key đã bị xoá vĩnh viễn</div>
+      </div>
+      <div class="btn-group" style="margin-top:0">
+        <button class="btn btn-danger btn-sm" onclick="confirmClearAll()">Xoá toàn bộ lịch sử</button>
+      </div>
+    </div>
+    <div class="danger-banner">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Các key dưới đây đã được xoá vĩnh viễn khỏi server. Lịch sử này chỉ lưu trên trình duyệt này.
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>License Key</th>
+            <th>Loại</th>
+            <th>Trạng thái lúc xoá</th>
+            <th>Thời điểm xoá</th>
+            <th>Ghi chú</th>
+            <th style="text-align:center">Xoá lịch sử</th>
+          </tr>
+        </thead>
+        <tbody id="deleted-tbody">
+          <tr><td colspan="6"><div class="empty">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            <p>Chưa có key nào bị xoá</p>
+          </div></td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
@@ -607,10 +682,72 @@ tbody tr:hover td{background:var(--surface2);color:var(--text)}
 <!-- TOAST -->
 <div id="toast-container"></div>
 
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay hidden" id="del-modal">
+  <div class="modal">
+    <div class="modal-title">⚠️ Xoá vĩnh viễn?</div>
+    <div class="modal-body">
+      Hành động này <strong>không thể hoàn tác</strong>. Key sẽ bị xoá hoàn toàn khỏi hệ thống.<br>
+      <div class="modal-key" id="del-modal-key">—</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeDelModal()">Huỷ</button>
+      <button class="btn btn-danger-solid btn-sm" onclick="confirmDelete()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Xoá vĩnh viễn
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CLEAR ALL HISTORY MODAL -->
+<div class="modal-overlay hidden" id="clear-modal">
+  <div class="modal">
+    <div class="modal-title">🗑️ Xoá toàn bộ lịch sử?</div>
+    <div class="modal-body">Xoá toàn bộ danh sách key đã xoá khỏi lịch sử trình duyệt. Các key đã bị xoá trên server vẫn không được khôi phục.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="$('clear-modal').classList.add('hidden')">Huỷ</button>
+      <button class="btn btn-danger-solid btn-sm" onclick="clearDeletedHistory()">Xác nhận xoá</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── STATE ──
-let allKeys = [];
+let allKeys      = [];
 let activeFilter = 'all';
+let pendingDelKey  = null;   // key string queued for delete
+let pendingDelMeta = null;   // metadata snapshot before delete
+
+// ── DELETED LOG (localStorage) ──
+const STORAGE_KEY = 'license_admin_deleted_v1';
+
+function loadDeletedLog(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }
+  catch{ return []; }
+}
+
+function saveDeletedLog(arr){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }catch{}
+  $('nav-deleted').textContent = arr.length;
+  $('deleted-count').textContent = arr.length;
+}
+
+function pushDeletedLog(entry){
+  const arr = loadDeletedLog();
+  arr.unshift(entry);        // newest first
+  if(arr.length > 500) arr.length = 500;
+  saveDeletedLog(arr);
+}
+
+function removeDeletedLog(key){
+  const arr = loadDeletedLog().filter(e => e.key !== key);
+  saveDeletedLog(arr);
+}
+
+function clearDeletedLog(){
+  saveDeletedLog([]);
+}
 
 // ── UTILS ──
 const $ = id => document.getElementById(id);
@@ -645,7 +782,7 @@ function setOutput(el, data, status){
   el.innerHTML = `<span class="log-${type}">HTTP ${status}</span>\n<span class="log-data">${JSON.stringify(data,null,2)}</span>`;
 }
 
-function setStatus(state){ // 'online'|'error'|'loading'
+function setStatus(state){
   const dot = $('status-dot'), txt = $('status-text');
   dot.className = 'status-dot ' + (state==='loading'?'pulse':state==='online'?'online':'error');
   txt.textContent = state==='online'?'Đã kết nối':state==='loading'?'Đang kiểm tra…':'Chưa kết nối';
@@ -657,6 +794,13 @@ function switchPage(name, btn){
   $('page-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
 }
+
+// ── INIT ──
+(function init(){
+  const log = loadDeletedLog();
+  $('nav-deleted').textContent = log.length;
+  $('deleted-count').textContent = log.length;
+})();
 
 // ── API ──
 async function call(path, opts={}){
@@ -713,10 +857,8 @@ async function generate(){
         note: $('note').value
       })
     });
-    // luôn hiển thị raw response để debug
     setOutput($('gen-raw-out'), data, status);
     if(ok){
-      // thử mọi shape response có thể
       let keys = [];
       if(Array.isArray(data))                    keys = data;
       else if(Array.isArray(data.keys))          keys = data.keys;
@@ -724,7 +866,6 @@ async function generate(){
       else if(Array.isArray(data.licenses))      keys = data.licenses;
       else if(typeof data.key === 'string')      keys = [data.key];
       else if(typeof data.license === 'string')  keys = [data.license];
-      // nếu API chỉ trả count mà không có mảng keys -> hiển thị raw JSON
       const n = keys.length || data.count || Number($('count').value) || 1;
       toast(`Đã tạo ${n} key`,'🔑');
       appendLog(`Tạo ${n} key thành công [${$('type').value}]`,'ok');
@@ -751,7 +892,6 @@ function renderGenKeys(keys, rawData){
   box.innerHTML='';
   card.style.display='';
   if(!keys || !keys.length){
-    // không có mảng key — hiển thị raw response để người dùng tự xem
     $('gen-count-lbl').textContent='Xem phản hồi bên dưới';
     const row=document.createElement('div'); row.className='gen-row';
     row.style.color='var(--text-muted)';
@@ -776,7 +916,6 @@ function renderGenKeys(keys, rawData){
 }
 
 function copyAllGenKeys(){
-  // chỉ lấy span có nút copy bên cạnh (có icon-btn anh em)
   const items=Array.from($('gen-keys-box').querySelectorAll('.gen-row'))
     .filter(r=>r.querySelector('.icon-btn'))
     .map(r=>r.querySelector('span').textContent.trim())
@@ -843,6 +982,90 @@ async function resetHwid(){
   }catch(e){ toast('Lỗi: '+e.message,'❌'); }
 }
 
+// ── DELETE ──
+function openDelModal(key, meta){
+  pendingDelKey  = key;
+  pendingDelMeta = meta || {key, type:'—', status:'—', note:'—'};
+  $('del-modal-key').textContent = key;
+  $('del-modal').classList.remove('hidden');
+}
+
+function closeDelModal(){
+  $('del-modal').classList.add('hidden');
+  pendingDelKey  = null;
+  pendingDelMeta = null;
+}
+
+async function confirmDelete(){
+  if(!pendingDelKey) return;
+  const key  = pendingDelKey;
+  const meta = pendingDelMeta;
+  closeDelModal();
+
+  try{
+    // Try DELETE /admin/delete?key=… first, then POST /admin/delete
+    let ok = false, status = 0;
+    try{
+      const r = await call('/admin/delete?key='+encodeURIComponent(key), {method:'DELETE'});
+      ok = r.ok; status = r.status;
+    }catch{}
+    if(!ok){
+      try{
+        const r = await call('/admin/delete',{method:'POST',body:JSON.stringify({key})});
+        ok = r.ok; status = r.status;
+      }catch{}
+    }
+    // Log to deleted history regardless — if the API has no delete endpoint,
+    // the admin still wants to track what they consider "deleted".
+    pushDeletedLog({
+      key,
+      type:   meta.type   || '—',
+      status: meta.status || '—',
+      note:   meta.note   || '—',
+      deletedAt: new Date().toISOString(),
+      apiOk: ok,
+      apiStatus: status
+    });
+
+    if(ok){
+      toast('Đã xoá vĩnh viễn: '+key,'🗑️');
+      appendLog('Xoá vĩnh viễn: '+key, 'err');
+    } else {
+      toast('API không có /admin/delete — đã ghi log cục bộ','⚠️', 4000);
+      appendLog('Delete: key ghi log cục bộ (API status '+status+')', 'warn');
+    }
+
+    // Remove from in-memory list and re-render
+    allKeys = allKeys.filter(k => (k.key||k.license||k.id) !== key);
+    $('list-count').textContent = allKeys.length;
+    $('nav-total').textContent  = allKeys.length;
+    computeStats(allKeys);
+    filterTable();
+
+    // Refresh deleted tab if visible
+    if($('page-deleted').classList.contains('active')) renderDeletedTable();
+
+  }catch(e){
+    toast('Lỗi xoá: '+e.message,'❌');
+    appendLog('Exception delete: '+e.message,'err');
+  }
+}
+
+// Called from "Xoá vĩnh viễn" in the Manage page
+function deleteSingleFromManage(){
+  const k = $('key').value.trim();
+  if(!k){ toast('Nhập license key','⚠️'); return; }
+  // Try to find metadata from allKeys cache
+  const found = allKeys.find(x => (x.key||x.license||x.id) === k);
+  openDelModal(k, found ? {key:k, type:found.type, status:found.status, note:found.note} : {key:k});
+}
+
+// Inline delete from the table
+function inlineDelete(key){
+  const found = allKeys.find(x => (x.key||x.license||x.id) === key);
+  openDelModal(key, found ? {key, type:found.type, status:found.status, note:found.note} : {key});
+}
+
 // ── LIST ──
 function parseKeys(data){
   if(Array.isArray(data))              return data;
@@ -852,7 +1075,6 @@ function parseKeys(data){
   if(Array.isArray(data.items))        return data.items;
   if(Array.isArray(data.results))      return data.results;
   if(Array.isArray(data.list))         return data.list;
-  // object map { key: {...}, key2: {...} }
   const vals = Object.values(data);
   if(vals.length && typeof vals[0]==='object' && !Array.isArray(vals[0])) return vals;
   return [];
@@ -862,7 +1084,6 @@ async function listLicenses(){
   const rawCard=$('list-raw-card'), rawOut=$('list-raw-out');
   try{
     const {data,status,ok}=await call('/admin/list?pageSize=500');
-    // luôn show raw
     rawCard.style.display='';
     setOutput(rawOut, data, status);
     if(ok){
@@ -923,7 +1144,7 @@ function renderTable(keys){
     const sc = status==='active'?'b-active':status==='revoked'?'b-revoked':status==='expired'?'b-expired':'b-unknown';
     const tc = ['free','daily','weekly','monthly','lifetime'].includes(type.toLowerCase()) ? 'b-'+type.toLowerCase() : 'b-unknown';
     const isRevoked = status==='revoked';
-    return `<tr id="row-${safe}">
+    return `<tr>
       <td><span class="mono" style="font-size:11.5px">${key}</span></td>
       <td><span class="badge ${tc}">${type}</span></td>
       <td><span class="badge ${sc}">${status}</span></td>
@@ -938,16 +1159,19 @@ function renderTable(keys){
           <button class="icon-btn" title="Reset HWID" onclick="inlineResetHwid('${safe}')" style="color:var(--green)">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
           </button>
-          ${!isRevoked?`<button class="icon-btn" title="Thu hồi key" onclick="inlineRevoke('${safe}')" style="color:var(--red)">
+          ${!isRevoked?`<button class="icon-btn" title="Thu hồi key" onclick="inlineRevoke('${safe}')" style="color:var(--yellow)">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-          </button>`:'<span style="font-size:10px;color:var(--text-muted);padding:0 4px">—</span>'}
+          </button>`:''}
+          <button class="icon-btn del-btn" title="Xoá vĩnh viễn" onclick="inlineDelete('${safe}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
         </div>
       </td>
     </tr>`;
   }).join('');
 }
 
-// inline actions trực tiếp từ bảng
+// inline actions from table
 async function inlineRevoke(key){
   if(!confirm(`Thu hồi key:\n${key}?`)) return;
   try{
@@ -955,7 +1179,7 @@ async function inlineRevoke(key){
     if(ok){
       toast('Đã thu hồi key','🚫');
       appendLog('Thu hồi: '+key,'warn');
-      await listLicenses(); // refresh
+      await listLicenses();
     } else toast('Lỗi thu hồi: HTTP '+status,'❌');
   }catch(e){ toast('Lỗi: '+e.message,'❌'); }
 }
@@ -966,11 +1190,65 @@ async function inlineResetHwid(key){
     if(ok){
       toast('Đã reset HWID','✅');
       appendLog('Reset HWID: '+key,'ok');
-      await listLicenses(); // refresh
+      await listLicenses();
     } else toast('Lỗi reset: HTTP '+status,'❌');
   }catch(e){ toast('Lỗi: '+e.message,'❌'); }
 }
 
+// ── DELETED PAGE ──
+function loadDeletedPage(){
+  renderDeletedTable();
+}
+
+function renderDeletedTable(){
+  const arr = loadDeletedLog();
+  $('deleted-count').textContent = arr.length;
+  $('nav-deleted').textContent   = arr.length;
+  const tbody = $('deleted-tbody');
+  if(!arr.length){
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      <p>Chưa có key nào bị xoá</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = arr.map(e=>{
+    const safe = (e.key||'').replace(/'/g,"\\'");
+    const tc = ['free','daily','weekly','monthly','lifetime'].includes((e.type||'').toLowerCase()) ? 'b-'+(e.type||'').toLowerCase() : 'b-unknown';
+    const sc = (e.status||'').toLowerCase()==='active'?'b-active':(e.status||'').toLowerCase()==='revoked'?'b-revoked':'b-expired';
+    const dt = e.deletedAt ? new Date(e.deletedAt).toLocaleString('vi-VN') : '—';
+    return `<tr class="deleted-row">
+      <td><span class="mono" style="font-size:11.5px">${e.key||'—'}</span></td>
+      <td><span class="badge ${tc}">${e.type||'—'}</span></td>
+      <td><span class="badge b-deleted">${e.status||'—'}</span></td>
+      <td style="font-size:12px;white-space:nowrap;color:var(--red)">${dt}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${e.note||'—'}</td>
+      <td style="text-align:center">
+        <button class="icon-btn" title="Xoá khỏi lịch sử" style="color:var(--text-muted)" onclick="removeFromHistory('${safe}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function removeFromHistory(key){
+  removeDeletedLog(key);
+  renderDeletedTable();
+  toast('Đã xoá khỏi lịch sử','✓');
+}
+
+function confirmClearAll(){
+  $('clear-modal').classList.remove('hidden');
+}
+
+function clearDeletedHistory(){
+  clearDeletedLog();
+  $('clear-modal').classList.add('hidden');
+  renderDeletedTable();
+  toast('Đã xoá toàn bộ lịch sử','🗑️');
+}
+
+// ── STATS ──
 function computeStats(keys){
   const total=keys.length;
   const active=keys.filter(k=>(k.status||'').toLowerCase()==='active'||k.active===true).length;
@@ -1020,6 +1298,10 @@ function exportCSV(){
 function cp(text){
   navigator.clipboard.writeText(text).then(()=>toast('Đã sao chép','📋'));
 }
+
+// ── CLOSE MODALS ON OVERLAY CLICK ──
+$('del-modal').addEventListener('click', e=>{ if(e.target===$('del-modal')) closeDelModal(); });
+$('clear-modal').addEventListener('click', e=>{ if(e.target===$('clear-modal')) $('clear-modal').classList.add('hidden'); });
 </script>
 </body>
 </html>
