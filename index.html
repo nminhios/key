@@ -25,10 +25,10 @@
   --safe-b:env(safe-area-inset-bottom,0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation;height:100%}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:pan-x pan-y;height:100%}
 body{
   font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;
-  height:100%;overflow:hidden;touch-action:manipulation;-webkit-font-smoothing:antialiased;
+  height:100%;overflow:hidden;touch-action:pan-x pan-y;-webkit-font-smoothing:antialiased;
   background-image:
     radial-gradient(900px 500px at 12% -10%,rgba(139,108,255,.13),transparent 60%),
     radial-gradient(700px 500px at 100% 0%,rgba(40,200,240,.08),transparent 60%);
@@ -506,10 +506,115 @@ body:not(.ready) .bottom-nav{transform:translateY(120%)}
 .stat-val{text-shadow:0 0 28px color-mix(in srgb,var(--c) 45%,transparent)}
 .s-blue{--c:#9d84ff}
 
+/* ═════════ CHỌN MENU V1 / V2 ═════════ */
+body:not([data-menu]) .shell{display:none}
+body[data-menu="v1"] #app-v2,body[data-menu="v2"] #app-v1{display:none}
+body:not([data-menu="v1"]) #bottom-nav{display:none !important}
+body:not([data-menu="v2"]) #bottom-nav-v2{display:none !important}
+
+#chooser{
+  position:fixed;inset:0;z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;padding:28px 20px;overflow-y:auto;
+  background:radial-gradient(900px 620px at 50% 25%,rgba(139,108,255,.16),rgba(6,7,13,.86) 70%);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:opacity .6s ease,transform .8s cubic-bezier(.2,.8,.2,1),filter .6s ease,visibility 0s linear .8s;
+}
+#chooser.hidden{opacity:0;visibility:hidden;pointer-events:none;transform:scale(.97)}
+#chooser.out{opacity:0;visibility:hidden;pointer-events:none;transform:scale(1.07);filter:blur(12px)}
+#chooser:not(.hidden):not(.out){transition-delay:0s,0s,0s,0s}
+.ch-head{text-align:center;animation:none}
+#chooser:not(.hidden):not(.out) .ch-head{animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.ch-logo{width:56px;height:56px;border-radius:17px;margin:0 auto 16px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 10px 40px var(--accent-glow);animation:glowpulse 3.5s ease-in-out infinite}
+.ch-title{font-size:clamp(24px,5vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.ch-sub{margin-top:8px;color:var(--text-muted);font-size:14px}
+.pick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,380px));gap:20px;width:100%;justify-content:center}
+.pick{
+  position:relative;overflow:hidden;text-align:left;padding:26px 26px 22px;border-radius:24px;color:var(--text);
+  background:linear-gradient(160deg,rgba(30,34,56,.88),rgba(14,17,28,.88));border:1px solid var(--border-hi);
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .35s;
+}
+#chooser:not(.hidden):not(.out) .pick{animation:rise .75s cubic-bezier(.2,.8,.2,1) both}
+#chooser:not(.hidden):not(.out) .pick:nth-child(1){animation-delay:.18s}
+#chooser:not(.hidden):not(.out) .pick:nth-child(2){animation-delay:.3s}
+.pick::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--c) 0%,transparent 60%);opacity:.14;transition:opacity .3s}
+.pick::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),color-mix(in srgb,var(--c) 22%,transparent),transparent 45%)}
+.pick:hover,.pick:focus-visible{transform:translateY(-8px) scale(1.015);border-color:var(--c);box-shadow:0 26px 70px color-mix(in srgb,var(--c) 28%,transparent);outline:none}
+.pick:hover::before{opacity:.26}.pick:hover::after{opacity:1}
+.pick:active{transform:translateY(-2px) scale(.99)}
+.pick.p1{--c:#8b6cff}.pick.p2{--c:#f472b6}
+.pick>*{position:relative;z-index:1}
+.pick-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.pick-ver{font-family:var(--mono);font-size:44px;font-weight:500;line-height:1;letter-spacing:-.04em;background:linear-gradient(135deg,var(--c),#28c8f0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pick-last{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--green-soft);color:var(--green);display:none}
+.pick.last .pick-last{display:inline-block}
+.pick h3{font-size:19px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.pick p{font-size:13px;color:var(--text-dim);margin-bottom:16px}
+.pick ul{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:22px}
+.pick li{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--text-dim)}
+.pick li::before{content:'✓';flex-shrink:0;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;background:color-mix(in srgb,var(--c) 22%,transparent);color:var(--c);margin-top:1px}
+.pick-cta{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--border);font-weight:700;font-size:13.5px}
+.pick-cta b{display:inline-flex;align-items:center;gap:8px;color:var(--c)}
+.pick-cta b svg{transition:transform .3s}
+.pick:hover .pick-cta b svg{transform:translateX(6px)}
+.pick kbd{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:7px;background:var(--surface3);color:var(--text-muted);border:1px solid var(--border)}
+.ch-hint{font-size:12px;color:var(--text-muted)}
+.switch-menu{gap:6px}
+
+/* menu v2 */
+.preset-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.k-mono{font-family:var(--mono);font-size:12px;color:var(--text);cursor:pointer;letter-spacing:.02em;transition:color .2s}
+.k-mono:hover{color:var(--accent2)}
+@media(max-width:900px){
+  .pick-grid{grid-template-columns:1fr;max-width:420px}
+  #chooser{justify-content:flex-start;padding-top:44px}
+}
+
+/* ═════════ TỐI ƯU MƯỢT CHO MOBILE ═════════ */
+/* vệt sáng nền: dùng gradient thay vì filter:blur => nhẹ hơn nhiều mà nhìn vẫn mềm */
+.aurora i{filter:none !important;opacity:1;backface-visibility:hidden;transform:translateZ(0)}
+.aurora i:nth-child(1){width:760px;height:760px;background:radial-gradient(closest-side,rgba(106,75,255,.5),rgba(106,75,255,0));opacity:1}
+.aurora i:nth-child(2){width:680px;height:680px;background:radial-gradient(closest-side,rgba(255,79,163,.34),rgba(255,79,163,0));opacity:1}
+.aurora i:nth-child(3){width:640px;height:640px;background:radial-gradient(closest-side,rgba(18,184,201,.3),rgba(18,184,201,0));opacity:1}
+.main{overscroll-behavior:contain}
+
+/* lite = điện thoại / máy yếu: giữ hiệu ứng chính, bỏ phần tốn GPU */
+.lite .card,.lite .stat,.lite .topbar,.lite .overlay,.lite #chooser,.lite .bottom-nav{backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
+.lite .card,.lite .stat{background:linear-gradient(160deg,#171b2c,#0e111b)}
+.lite .topbar{background:rgba(7,9,15,.94)}
+.lite .bottom-nav{background:rgba(10,13,21,.97)}
+.lite .overlay{background:rgba(2,4,8,.82)}
+.lite #chooser{background:radial-gradient(800px 560px at 50% 22%,#17133a 0%,#06070d 75%)}
+.lite .aurora i:nth-child(3){display:none}
+.lite .aurora i:nth-child(1){animation-duration:34s}
+.lite .aurora i:nth-child(2){animation-duration:40s}
+/* bỏ hiệu ứng lặp vô hạn gây vẽ lại liên tục */
+.lite .grad,.lite .topbar::after,.lite .btn-primary,.lite .btn-primary::before,.lite .brand-icon,.lite .avatar,.lite .ch-logo,.lite .b-active::before,.lite .intro-skip{animation:none !important}
+.lite .grad{background-size:100% 100%}
+.lite .btn-primary{background-size:100% 100%}
+.lite .card::after,.lite .stat::after,.lite .quick button::after,.lite .pick::after{display:none}
+.lite .stat:hover,.lite .card:hover,.lite .quick button:hover{transform:none;box-shadow:none}
+.lite .pick:hover{transform:none}
+/* bỏ filter:blur khi vào/ra (đắt nhất trên mobile) */
+body.lite:not(.ready) .shell,.lite body:not(.ready) .shell{filter:none}
+.lite .shell{transition:opacity .6s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.lite #intro,.lite #chooser{transition:opacity .6s ease,transform .7s cubic-bezier(.2,.8,.2,1),visibility 0s linear .7s}
+.lite #intro.out,.lite #chooser.out{filter:none}
+.lite #intro::before{animation:none;filter:none;inset:-20%;opacity:.5}
+.lite #intro::after{animation:none}
+.lite .intro-title span{filter:none;animation-name:letter2}
+@keyframes letter2{from{opacity:0;transform:translateY(26px) scale(.8)}to{opacity:1;transform:none}}
+/* danh sách dài: chỉ vẽ dòng đang nhìn thấy */
+.lite tbody tr{content-visibility:auto;contain-intrinsic-size:auto 120px}
+.lite .gen-row,.lite tbody tr{animation-duration:.3s}
+.lite .page.active>*{animation-duration:.4s}
+.lite .toast::after{display:none}
+.lite .nav-item:hover svg,.lite .icon-btn:hover,.lite .chip:hover,.lite .btn:hover{transform:none}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
 }
 </style>
+<script>(function(){var d=document.documentElement,m=function(q){try{return matchMedia(q).matches}catch(e){return false}};
+if(m('(pointer:coarse)')||innerWidth<=900||(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=4)d.classList.add('lite')})()</script>
 </head>
 <body>
 <div id="intro" aria-hidden="true">
@@ -527,7 +632,7 @@ body:not(.ready) .bottom-nav{transform:translateY(120%)}
 </div>
 <canvas id="fx"></canvas>
 <div class="aurora"><i></i><i></i><i></i></div>
-<div class="shell">
+<div class="shell" id="app-v1">
 
 <!-- SIDEBAR -->
 <nav class="sidebar">
@@ -562,6 +667,7 @@ body:not(.ready) .bottom-nav{transform:translateY(120%)}
     </div>
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-right">
+      <button class="conn-pill switch-menu" data-switch title="Đổi sang menu khác"><span>⇄</span> Menu v1</button>
       <button class="conn-pill" id="conn-pill"><span class="dot" id="status-dot"></span><span id="status-text">Chưa kết nối</span></button>
     </div>
   </header>
@@ -685,7 +791,7 @@ body:not(.ready) .bottom-nav{transform:translateY(120%)}
       <div class="page-header"><div><div class="page-title">Kết nối</div><div class="page-sub">Cấu hình Cloudflare Worker endpoint</div></div></div>
       <div class="card">
         <div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Worker Config</div>
-        <div class="field"><label>Worker URL</label><input id="url" placeholder="https://license-api.example.workers.dev" spellcheck="false" autocomplete="off" autocapitalize="off" inputmode="url"></div>
+        <div class="field"><label>Worker URL</label><input id="url" placeholder="https://key.minhdz.workers.dev" spellcheck="false" autocomplete="off" autocapitalize="off" inputmode="url"></div>
         <div class="field"><label>Admin Token</label><input id="token" type="password" placeholder="Bearer token" autocomplete="off"></div>
         <label class="check"><input type="checkbox" id="remember" checked>Ghi nhớ trên thiết bị này</label>
         <button class="btn btn-primary" id="btn-health"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Kiểm tra kết nối</button>
@@ -693,6 +799,135 @@ body:not(.ready) .bottom-nav{transform:translateY(120%)}
       <div class="card">
         <div class="card-title">Phản hồi</div>
         <div class="output-box" id="conn-out">Chưa có yêu cầu.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</div>
+
+
+<!-- ═══════════ MENU V2 ═══════════ -->
+<div class="shell" id="app-v2">
+<nav class="sidebar">
+  <div class="brand">
+    <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+    <div><div class="brand-name">Admin <span class="grad">nminhios</span></div><div class="brand-sub">Key Admin · Menu v2</div></div>
+  </div>
+  <div class="nav-label">Quản lý Key</div>
+  <button class="nav-item active" data-v2page="keys"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>Danh sách Key<span class="nav-badge" id="v2-nav-total">0</span></button>
+  <button class="nav-item" data-v2page="create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Tạo Key</button>
+  <button class="nav-item" data-v2page="manage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Quản lý Key</button>
+  <div class="nav-label">Cài đặt</div>
+  <button class="nav-item" data-v2page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Cài đặt</button>
+  <div class="spacer"></div>
+  <button class="nav-item" data-switch><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Đổi menu</button>
+  <div class="user-card"><div class="avatar">N</div><div><div class="user-name">nminhios</div><div class="user-role">Quản trị viên</div></div></div>
+</nav>
+
+<div class="content">
+  <header class="topbar">
+    <div class="mobile-brand"><div class="brand-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>Admin <span class="grad">nminhios</span></div>
+    <div class="topbar-title" id="v2-topbar-title">Danh sách Key</div>
+    <div class="topbar-right">
+      <button class="conn-pill switch-menu" data-switch title="Đổi sang menu khác"><span>⇄</span> Menu v2</button>
+      <button class="conn-pill" id="v2-conn-pill"><span class="dot" id="v2-dot"></span><span id="v2-status-text">Chưa kiểm tra</span></button>
+    </div>
+  </header>
+
+  <main class="main" id="v2-main">
+
+    <section class="page active" id="v2-page-keys">
+      <div class="page-header">
+        <div><div class="page-title">Danh sách Key</div><div class="page-sub">Toàn bộ key đã tạo · hiển thị <span id="v2-count" class="grad" style="font-weight:700">0 / 0</span> key</div></div>
+        <div class="btn-row">
+          <button class="btn btn-ghost btn-sm" id="v2-import">＋ Thêm key</button>
+          <button class="btn btn-primary btn-sm" id="v2-sync">⟳ Đồng bộ</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat s-blue"><div class="stat-top"><span class="stat-label">Tổng số key</span><span class="stat-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span></div><div class="stat-val" id="v2-st-total">0</div><div class="stat-hint">trong danh sách</div></div>
+        <div class="stat s-green"><div class="stat-top"><span class="stat-label">Đang hoạt động</span><span class="stat-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg></span></div><div class="stat-val" id="v2-st-active">0</div><div class="stat-hint">còn hiệu lực</div></div>
+        <div class="stat s-red"><div class="stat-top"><span class="stat-label">Đã khóa</span><span class="stat-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg></span></div><div class="stat-val" id="v2-st-disabled">0</div><div class="stat-hint">bị khóa thủ công</div></div>
+        <div class="stat s-yel"><div class="stat-top"><span class="stat-label">Vĩnh viễn</span><span class="stat-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18.18 8.18a4.5 4.5 0 1 0 0 7.64L12 12l-6.18-3.82a4.5 4.5 0 1 0 0 7.64"/></svg></span></div><div class="stat-val" id="v2-st-perm">0</div><div class="stat-hint">không hết hạn</div></div>
+      </div>
+      <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="v2-search" placeholder="Tìm key, HWID…" autocomplete="off"></div>
+      <div class="chips" id="v2-chips">
+        <button class="chip on" data-f="all">Tất cả</button>
+        <button class="chip" data-f="active">Hoạt động</button>
+        <button class="chip" data-f="disabled">Đã khóa</button>
+        <button class="chip" data-f="expired">Hết hạn</button>
+        <button class="chip" data-f="permanent">Vĩnh viễn</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Key</th><th>Trạng thái</th><th>Hết hạn</th><th>HWID</th><th style="text-align:center">Thao tác</th></tr></thead>
+          <tbody id="v2-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page" id="v2-page-create">
+      <div class="page-header"><div><div class="page-title">Tạo Key mới</div><div class="page-sub">Tạo một hoặc nhiều key cùng lúc, chọn thời hạn tuỳ ý</div></div></div>
+      <div class="card">
+        <div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>Cấu hình Key</div>
+        <div class="section-label">Chọn nhanh</div>
+        <div class="preset-row" id="v2-presets">
+          <button class="chip" data-p="1:days">1 ngày</button>
+          <button class="chip" data-p="7:days">7 ngày</button>
+          <button class="chip on" data-p="30:days">30 ngày</button>
+          <button class="chip" data-p="3:months">3 tháng</button>
+          <button class="chip" data-p="1:permanent">Vĩnh viễn</button>
+        </div>
+        <div class="fg2">
+          <div class="field"><label>Thời hạn</label><input id="v2-c-duration" type="number" inputmode="numeric" min="0" value="30"></div>
+          <div class="field"><label>Đơn vị</label>
+            <select id="v2-c-unit"><option value="days">Ngày</option><option value="hours">Giờ</option><option value="weeks">Tuần</option><option value="months">Tháng</option><option value="permanent">Vĩnh viễn</option></select>
+          </div>
+        </div>
+        <div class="fg2">
+          <div class="field"><label>Số lượng (tối đa 100)</label><input id="v2-c-count" type="number" inputmode="numeric" min="1" max="100" value="1"></div>
+          <div class="field"><label>HWID (tuỳ chọn)</label><input id="v2-c-hwid" placeholder="Để trống: gắn HWID lúc dùng lần đầu" autocomplete="off"></div>
+        </div>
+        <button class="btn btn-primary" id="v2-create"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tạo Key</button>
+      </div>
+      <div class="card" id="v2-new-card" style="display:none">
+        <div class="card-title">Key vừa tạo — <span id="v2-new-lbl" class="grad">0 key</span><button class="btn btn-ghost btn-sm ct-right" id="v2-copy-all">Sao chép tất cả</button></div>
+        <div class="gen-box" id="v2-new-list"></div>
+      </div>
+    </section>
+
+    <section class="page" id="v2-page-manage">
+      <div class="page-header"><div><div class="page-title">Quản lý Key</div><div class="page-sub">Khóa, mở khóa, gia hạn, đặt lại HWID hoặc kiểm tra key</div></div></div>
+      <div class="card">
+        <div class="card-title">Thao tác</div>
+        <div class="field"><label>Key cần thao tác</label><input id="v2-m-key" placeholder="KEY-XXXXXXXX" spellcheck="false" autocomplete="off" autocapitalize="off"></div>
+        <div class="btn-row">
+          <button class="btn btn-success" data-v2act="enable">✓ Mở khóa</button>
+          <button class="btn btn-danger" data-v2act="disable">✕ Khóa</button>
+          <button class="btn btn-ghost" data-v2act="extend">⊕ Gia hạn</button>
+          <button class="btn btn-ghost" data-v2act="reset-hwid">↺ Đặt lại HWID</button>
+          <button class="btn btn-primary" data-v2act="check">? Kiểm tra</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Kết quả</div>
+        <div class="output-box" id="v2-out">Chưa có yêu cầu nào.</div>
+      </div>
+    </section>
+
+    <section class="page" id="v2-page-settings">
+      <div class="page-header"><div><div class="page-title">Cài đặt</div><div class="page-sub">Cấu hình worker cho menu v2</div></div></div>
+      <div class="card">
+        <div class="card-title">Server</div>
+        <div class="field"><label>URL Worker</label><input id="v2-url" placeholder="https://..." spellcheck="false" autocomplete="off" autocapitalize="off" inputmode="url"></div>
+        <div class="field"><label>Mã quản trị</label><input id="v2-secret" type="password" placeholder="Admin secret" autocomplete="off"></div>
+        <button class="btn btn-primary" id="v2-save">Lưu &amp; Kiểm tra</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Dữ liệu cục bộ</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Key được lưu trong trình duyệt vì worker không có endpoint lấy toàn bộ danh sách. Nhấn "Đồng bộ" ở trang danh sách để cập nhật trạng thái từ server.</p>
+        <button class="btn btn-danger" id="v2-clear">Xóa cache cục bộ</button>
       </div>
     </section>
 
@@ -708,6 +943,61 @@ body:not(.ready) .bottom-nav{transform:translateY(120%)}
   <button data-page="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>Danh sách</button>
   <button data-page="connection"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Kết nối</button>
 </nav>
+
+<nav class="bottom-nav" id="bottom-nav-v2">
+  <button data-v2page="keys" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>Danh sách</button>
+  <button data-v2page="create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Tạo key</button>
+  <button data-v2page="manage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Quản lý</button>
+  <button data-v2page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Cài đặt</button>
+  <button data-switch><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Đổi menu</button>
+</nav>
+
+<!-- CHỌN MENU -->
+<div id="chooser" class="hidden" role="dialog" aria-label="Chọn menu">
+  <div class="ch-head">
+    <div class="ch-logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+    <div class="ch-title">Chào mừng, <span class="grad">nminhios</span></div>
+    <div class="ch-sub">Chọn menu tạo key để bắt đầu</div>
+  </div>
+  <div class="pick-grid">
+    <button class="pick p1" data-pick="v1">
+      <div class="pick-top"><span class="pick-ver">v1</span><span class="pick-last">Dùng gần nhất</span></div>
+      <h3>Menu v1 · License Admin</h3>
+      <p>Bảng điều khiển đầy đủ, tải toàn bộ key trực tiếp từ server.</p>
+      <ul><li>Tạo key theo gói Free, Daily, Weekly, Monthly, Lifetime</li><li>Danh sách key từ server, lọc và xuất CSV</li><li>Thu hồi key và reset HWID</li></ul>
+      <div class="pick-cta"><b>Vào menu v1 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></b><kbd>1</kbd></div>
+    </button>
+    <button class="pick p2" data-pick="v2">
+      <div class="pick-top"><span class="pick-ver">v2</span><span class="pick-last">Dùng gần nhất</span></div>
+      <h3>Menu v2 · Key Admin</h3>
+      <p>Phiên bản tạo key linh hoạt, tự chọn thời hạn cho từng lô.</p>
+      <ul><li>Thời hạn tuỳ chọn: giờ, ngày, tuần, tháng hoặc vĩnh viễn</li><li>Gắn sẵn HWID, tạo tối đa 100 key một lần</li><li>Khóa, mở khóa, gia hạn, kiểm tra key</li></ul>
+      <div class="pick-cta"><b>Vào menu v2 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></b><kbd>2</kbd></div>
+    </button>
+  </div>
+  <div class="ch-hint">Bấm phím 1 hoặc 2 để chọn nhanh · có thể đổi menu bất cứ lúc nào</div>
+</div>
+
+<!-- MODAL V2 -->
+<div class="overlay hidden" id="v2-extend-modal">
+  <div class="modal">
+    <div class="modal-title">⊕ Gia hạn key</div>
+    <div class="modal-body"><div class="modal-key" id="v2-extend-key">—</div></div>
+    <div class="fg2">
+      <div class="field"><label>Thời gian</label><input id="v2-e-duration" type="number" inputmode="numeric" min="1" value="30"></div>
+      <div class="field"><label>Đơn vị</label><select id="v2-e-unit"><option value="days">Ngày</option><option value="hours">Giờ</option><option value="weeks">Tuần</option><option value="months">Tháng</option></select></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost btn-sm" data-close>Hủy</button><button class="btn btn-primary btn-sm" id="v2-extend-ok">Gia hạn</button></div>
+  </div>
+</div>
+<div class="overlay hidden" id="v2-import-modal">
+  <div class="modal">
+    <div class="modal-title">＋ Thêm key vào danh sách</div>
+    <div class="modal-body">Nhập key đã có sẵn để theo dõi trong menu v2.</div>
+    <div class="field"><label>Key</label><input id="v2-import-key" placeholder="KEY-XXXXXXXX" spellcheck="false" autocomplete="off" autocapitalize="off"></div>
+    <div class="modal-actions"><button class="btn btn-ghost btn-sm" data-close>Hủy</button><button class="btn btn-primary btn-sm" id="v2-import-ok">Thêm</button></div>
+  </div>
+</div>
 
 <div id="toasts"></div>
 
@@ -735,13 +1025,6 @@ let allKeys = [], activeFilter = 'all';
 
 // ───────── CHỐNG ZOOM (iOS / double-tap / pinch) ─────────
 ['gesturestart','gesturechange','gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
-let lastTouchEnd = 0;
-document.addEventListener('touchend', e => {
-  const now = Date.now();
-  if (now - lastTouchEnd <= 350) e.preventDefault();
-  lastTouchEnd = now;
-}, {passive:false});
-document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, {passive:false});
 document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, {passive:false});
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && ['+','-','=','0'].includes(e.key)) e.preventDefault();
@@ -761,10 +1044,11 @@ function saveConfig(){
     }
   } catch {}
 }
+const DEFAULT_V1_URL = 'https://key.minhdz.workers.dev';
 function restoreConfig(){
   try {
     $('remember').checked = localStorage.getItem('la_remember') !== '0';
-    $('url').value = localStorage.getItem('la_url') || '';
+    $('url').value = localStorage.getItem('la_url') || DEFAULT_V1_URL;
     $('token').value = localStorage.getItem('la_token') || '';
   } catch {}
 }
@@ -1130,13 +1414,300 @@ document.addEventListener('pointerdown', e => {
   b.appendChild(o); setTimeout(() => o.remove(), 700);
 });
 // đèn pha bám theo con trỏ trên thẻ
-document.addEventListener('pointermove', e => {
-  const c = e.target.closest?.('.card, .stat, .quick button'); if (!c) return;
-  const r = c.getBoundingClientRect();
-  c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-  c.style.setProperty('--my', (e.clientY - r.top) + 'px');
-});
+if (!document.documentElement.classList.contains('lite')) {
+  let spotRaf = 0, spotEv = null;
+  document.addEventListener('pointermove', e => {
+    spotEv = e; if (spotRaf) return;
+    spotRaf = requestAnimationFrame(() => {
+      spotRaf = 0;
+      const c = spotEv.target.closest?.('.card, .stat, .quick button, .pick'); if (!c) return;
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (spotEv.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (spotEv.clientY - r.top) + 'px');
+    });
+  }, {passive:true});
+}
 
+
+
+// ───────── CHỌN MENU V1 / V2 ─────────
+(function(){
+  const ch = $('chooser'); let lastMenu = null;
+  try { lastMenu = localStorage.getItem('la_menu'); } catch {}
+  function mark(){ ch.querySelectorAll('.pick').forEach(p => p.classList.toggle('last', p.dataset.pick === lastMenu)); }
+  window.showChooser = function(){ mark(); ch.classList.remove('hidden', 'out'); };
+  function choose(menu){
+    lastMenu = menu; try { localStorage.setItem('la_menu', menu); } catch {}
+    document.body.dataset.menu = menu;
+    ch.classList.add('out');
+    requestAnimationFrame(() => document.body.classList.add('ready'));
+    if (menu === 'v2') V2.enter(); else switchPage('dashboard');
+  }
+  ch.addEventListener('click', e => { const b = e.target.closest('[data-pick]'); if (b) choose(b.dataset.pick); });
+  document.addEventListener('keydown', e => {
+    if (ch.classList.contains('hidden') || ch.classList.contains('out')) return;
+    if (e.key === '1') choose('v1'); else if (e.key === '2') choose('v2');
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-switch]')) return;
+    ch.classList.remove('hidden', 'out'); mark();
+  });
+})();
+
+// ───────── MENU V2 ─────────
+const V2 = (function(){
+  const DEFAULT_URL = 'https://nminhios-key.nguyenquangminh24122010.workers.dev';
+  const LS = {keys:'nminhios_keys', url:'la2_url', token:'la2_token'};
+  const TITLES = {keys:'Danh sách Key', create:'Tạo Key', manage:'Quản lý Key', settings:'Cài đặt'};
+  let keys = []; try { keys = JSON.parse(localStorage.getItem(LS.keys) || '[]'); } catch {}
+  let filter = 'all', extendTarget = '', lastNew = [];
+  const g = id => $(id);
+  const save = () => { try { localStorage.setItem(LS.keys, JSON.stringify(keys)); } catch {} };
+  const t = (m, type='info') => toast(m, type === 'ok' ? '✅' : type === 'err' ? '❌' : 'ℹ️');
+  const base = () => g('v2-url').value.trim().replace(/\/+$/, '');
+  const secret = () => g('v2-secret').value.trim();
+  const nowSec = () => Math.floor(Date.now() / 1000);
+
+  async function req(path, body){
+    const headers = {'authorization': 'Bearer ' + secret()};
+    const opts = {headers};
+    if (body !== undefined) { opts.method = 'POST'; headers['content-type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    const r = await fetch(base() + path, opts);
+    const txt = await r.text(); let data; try { data = JSON.parse(txt); } catch { data = {raw: txt}; }
+    return {data, status: r.status, ok: r.ok};
+  }
+  function unitToDays(val, unit){
+    if (unit === 'permanent') return 0;
+    const n = Number(val) || 0;
+    if (unit === 'hours') return Math.round(n / 24 * 10) / 10;
+    if (unit === 'weeks') return n * 7;
+    if (unit === 'months') return n * 30;
+    return n;
+  }
+  function setConn(state){
+    g('v2-dot').className = 'dot ' + (state === 'loading' ? 'pulse' : state === 'online' ? 'online' : 'error');
+    g('v2-status-text').textContent = state === 'online' ? 'Đã kết nối' : state === 'loading' ? 'Đang kiểm tra…' : 'Mất kết nối';
+  }
+  async function testConn(silent){
+    setConn('loading');
+    try {
+      const r = await fetch(base() + '/'); const d = await r.json();
+      if (d.ok) { setConn('online'); if (!silent) t('Server online', 'ok'); }
+      else { setConn('error'); if (!silent) t('Server trả lỗi', 'err'); }
+    } catch (e) { setConn('error'); if (!silent) t('Lỗi kết nối: ' + e.message, 'err'); }
+  }
+
+  // ── trạng thái key ──
+  function info(k){
+    const perm = !k.expires_at, expired = !perm && k.expires_at < nowSec();
+    if (k.disabled) return {cls:'b-revoked', txt:'Khóa', key:'disabled'};
+    if (expired)    return {cls:'b-expired', txt:'Hết hạn', key:'expired'};
+    if (perm)       return {cls:'b-lifetime', txt:'Vĩnh viễn', key:'permanent'};
+    return {cls:'b-active', txt:'Hoạt động', key:'active'};
+  }
+  function expCell(k){
+    if (!k.expires_at) return '<span class="badge b-lifetime">∞</span>';
+    const d = new Date(Number(k.expires_at) * 1000); if (isNaN(d)) return '—';
+    const diff = d - Date.now();
+    const col = diff < 0 ? 'var(--red)' : diff < 864e5 * 3 ? 'var(--yellow)' : 'var(--text-dim)';
+    return `<span style="color:${col};white-space:nowrap">${esc(d.toLocaleDateString('vi-VN'))}</span>`;
+  }
+  const IC = {
+    copy: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+    lock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    unlock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>',
+    plus: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+    reset: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>'
+  };
+
+  function stats(){
+    const n = k => info(k).key;
+    animNum('v2-st-total', keys.length);
+    animNum('v2-st-active', keys.filter(k => n(k) === 'active' || n(k) === 'permanent').length);
+    animNum('v2-st-disabled', keys.filter(k => n(k) === 'disabled').length);
+    animNum('v2-st-perm', keys.filter(k => !k.expires_at).length);
+    g('v2-nav-total').textContent = keys.length;
+  }
+  function render(){
+    const q = g('v2-search').value.toLowerCase();
+    const list = keys.filter(k => {
+      const st = info(k).key;
+      if (filter !== 'all' && st !== filter) return false;
+      return !q || k.key.toLowerCase().includes(q) || String(k.hwid || '').toLowerCase().includes(q);
+    });
+    g('v2-count').textContent = list.length + ' / ' + keys.length;
+    const tb = g('v2-tbody');
+    if (!list.length) {
+      tb.innerHTML = `<tr><td colspan="5" class="no-label"><div class="empty"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><p>${keys.length ? 'Không khớp bộ lọc' : 'Chưa có key. Hãy tạo key ở mục "Tạo Key"'}</p></div></td></tr>`;
+      return;
+    }
+    tb.innerHTML = list.map((k, i) => {
+      const s = info(k), key = esc(k.key), hw = k.hwid ? esc(String(k.hwid)) : '';
+      return `<tr data-key="${key}" style="--i:${Math.min(i, 14)}">
+        <td data-label="Key"><span class="k-mono" data-act="copy" title="Bấm để sao chép">${key}</span></td>
+        <td data-label="Trạng thái"><span class="badge ${s.cls}">${s.txt}</span></td>
+        <td data-label="Hết hạn">${expCell(k)}</td>
+        <td data-label="HWID" class="mono" style="font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${hw}">${hw || '<i style="color:var(--text-muted)">chưa gắn</i>'}</td>
+        <td class="no-label"><div class="actions">
+          <button class="icon-btn" data-act="copy" title="Sao chép">${IC.copy}</button>
+          <button class="icon-btn ${k.disabled ? 'ok' : 'warn'}" data-act="toggle" title="${k.disabled ? 'Mở khóa' : 'Khóa'}">${k.disabled ? IC.unlock : IC.lock}</button>
+          <button class="icon-btn ok" data-act="extend" title="Gia hạn">${IC.plus}</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── đồng bộ ──
+  async function sync(){
+    if (!keys.length) return t('Chưa có key nào. Hãy tạo key trước.', 'info');
+    const btn = g('v2-sync'); btn.disabled = true; t('Đang đồng bộ ' + keys.length + ' key…', 'info');
+    const out = keys.slice(); let next = 0, fail = 0;
+    async function worker(){
+      while (next < out.length) {
+        const idx = next++, k = out[idx];
+        try {
+          const {data, ok} = await req('/admin/get?key=' + encodeURIComponent(k.key));
+          if (ok && data.ok && data.data) out[idx] = {key:k.key, disabled:!!data.data.disabled, expires_at:data.data.expires_at || 0, hwid:data.data.hwid || null, created_at:data.data.created_at || k.created_at || 0};
+          else fail++;
+        } catch { fail++; }
+      }
+    }
+    await Promise.all(Array.from({length: Math.min(6, out.length)}, worker));
+    keys = out; save(); render(); stats();
+    btn.disabled = false;
+    t(fail ? `Đồng bộ xong, ${fail} key không tải được` : 'Đã đồng bộ ' + keys.length + ' key', fail ? 'info' : 'ok');
+  }
+
+  // ── tạo key ──
+  async function create(){
+    const unit = g('v2-c-unit').value, days = unitToDays(g('v2-c-duration').value, unit);
+    const cnt = Math.min(100, Math.max(1, Number(g('v2-c-count').value) || 1)), hwid = g('v2-c-hwid').value.trim();
+    const btn = g('v2-create'), label = btn.innerHTML; btn.disabled = true;
+    const made = []; let err = '';
+    try {
+      for (let i = 0; i < cnt; i++) {
+        btn.innerHTML = `<span class="spin"></span> Đang tạo ${i + 1}/${cnt}…`;
+        const body = {days}; if (hwid) body.hwid = hwid;
+        const {data, ok} = await req('/admin/create', body);
+        if (ok && data.ok && data.key) {
+          made.push(data.key);
+          keys.unshift({key:data.key, disabled:false, expires_at:data.expires_at || 0, hwid:hwid || null, created_at:nowSec()});
+        } else { err = data.error || data.message || ('HTTP ' + (data.status || '')); break; }
+      }
+    } catch (e) { err = e.message; }
+    save(); render(); stats();
+    lastNew = made;
+    const box = g('v2-new-list'); box.innerHTML = '';
+    made.forEach((k, i) => {
+      const row = document.createElement('div'); row.className = 'gen-row'; row.dataset.key = k; row.style.setProperty('--i', Math.min(i, 20));
+      row.innerHTML = `<span>${esc(k)}</span><button class="icon-btn" data-copy title="Sao chép">${IC.copy}</button>`;
+      box.appendChild(row);
+    });
+    g('v2-new-card').style.display = made.length ? '' : 'none';
+    g('v2-new-lbl').textContent = made.length + ' key';
+    if (made.length) { t('Đã tạo ' + made.length + ' key', 'ok'); appendLog('Menu v2: tạo ' + made.length + ' key', 'ok'); }
+    if (err) t('Lỗi tạo key: ' + err, 'err');
+    btn.disabled = false; btn.innerHTML = label;
+  }
+
+  // ── thao tác ──
+  function show(out){ setOutput(g('v2-out'), out.data, out.status); }
+  function patchLocal(key, fn){ const k = keys.find(x => x.key === key); if (k) { fn(k); save(); render(); stats(); } }
+  async function act(type, key){
+    if (!key) return t('Nhập key trước.', 'err');
+    try {
+      let r;
+      if (type === 'check') r = await req('/check?key=' + encodeURIComponent(key));
+      else r = await req('/admin/' + type, {key});
+      show(r);
+      if (!r.ok) return t('Thao tác thất bại: HTTP ' + r.status, 'err');
+      if (type === 'enable') patchLocal(key, k => k.disabled = false);
+      if (type === 'disable') patchLocal(key, k => k.disabled = true);
+      if (type === 'reset-hwid') patchLocal(key, k => k.hwid = null);
+      t('Thao tác thành công', 'ok'); appendLog('Menu v2: ' + type + ' ' + key, 'ok');
+    } catch (e) { t('Lỗi: ' + e.message, 'err'); }
+  }
+  function openExtend(key){
+    if (!key) return t('Nhập key trước.', 'err');
+    extendTarget = key; g('v2-extend-key').textContent = key; g('v2-extend-modal').classList.remove('hidden');
+  }
+  async function doExtend(){
+    const key = extendTarget, days = unitToDays(g('v2-e-duration').value, g('v2-e-unit').value);
+    g('v2-extend-modal').classList.add('hidden');
+    try {
+      const r = await req('/admin/extend', {key, days}); show(r);
+      if (r.ok) { if (r.data.expires_at) patchLocal(key, k => k.expires_at = r.data.expires_at); t('Đã gia hạn', 'ok'); appendLog('Menu v2: gia hạn ' + key, 'ok'); }
+      else t('Gia hạn thất bại: HTTP ' + r.status, 'err');
+    } catch (e) { t('Lỗi: ' + e.message, 'err'); }
+  }
+  function importKey(){
+    const key = g('v2-import-key').value.trim().toUpperCase();
+    if (!key) return t('Nhập key trước.', 'err');
+    if (keys.some(k => k.key === key)) return t('Key đã có trong danh sách.', 'err');
+    keys.unshift({key, disabled:false, expires_at:0, hwid:null, created_at:nowSec()});
+    save(); render(); stats();
+    g('v2-import-modal').classList.add('hidden'); g('v2-import-key').value = '';
+    t('Đã thêm key. Bấm "Đồng bộ" để cập nhật trạng thái.', 'ok');
+  }
+
+  // ── điều hướng ──
+  function go(name){
+    document.querySelectorAll('#app-v2 .page').forEach(p => p.classList.toggle('active', p.id === 'v2-page-' + name));
+    document.querySelectorAll('[data-v2page]').forEach(b => b.classList.toggle('active', b.dataset.v2page === name));
+    g('v2-topbar-title').textContent = TITLES[name] || '';
+    g('v2-main').scrollTo(0, 0);
+  }
+
+  // ── sự kiện ──
+  document.querySelectorAll('[data-v2page]').forEach(b => b.addEventListener('click', () => go(b.dataset.v2page)));
+  g('v2-conn-pill').onclick = () => go('settings');
+  g('v2-sync').onclick = sync;
+  g('v2-import').onclick = () => { g('v2-import-modal').classList.remove('hidden'); setTimeout(() => g('v2-import-key').focus(), 50); };
+  g('v2-import-ok').onclick = importKey;
+  g('v2-import-key').addEventListener('keydown', e => { if (e.key === 'Enter') importKey(); });
+  g('v2-search').oninput = render;
+  g('v2-chips').addEventListener('click', e => {
+    const c = e.target.closest('.chip'); if (!c) return;
+    filter = c.dataset.f; g('v2-chips').querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === c)); render();
+  });
+  g('v2-presets').addEventListener('click', e => {
+    const c = e.target.closest('.chip'); if (!c) return;
+    const [n, u] = c.dataset.p.split(':');
+    g('v2-c-duration').value = n; g('v2-c-unit').value = u;
+    g('v2-presets').querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === c));
+  });
+  g('v2-c-unit').addEventListener('change', () => g('v2-presets').querySelectorAll('.chip').forEach(x => x.classList.remove('on')));
+  g('v2-create').onclick = create;
+  g('v2-copy-all').onclick = () => lastNew.length ? cp(lastNew.join('\n'), 'Đã sao chép ' + lastNew.length + ' key') : t('Không có key để sao chép', 'err');
+  g('v2-new-list').addEventListener('click', e => { const b = e.target.closest('[data-copy]'); if (b) cp(b.closest('.gen-row').dataset.key); });
+  g('v2-tbody').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const key = b.closest('tr').dataset.key, k = keys.find(x => x.key === key);
+    if (b.dataset.act === 'copy') cp(key);
+    else if (b.dataset.act === 'toggle') act(k && k.disabled ? 'enable' : 'disable', key);
+    else if (b.dataset.act === 'extend') openExtend(key);
+  });
+  document.querySelectorAll('[data-v2act]').forEach(b => b.addEventListener('click', () => {
+    const key = g('v2-m-key').value.trim(), a = b.dataset.v2act;
+    if (a === 'extend') openExtend(key); else act(a, key);
+  }));
+  g('v2-extend-ok').onclick = doExtend;
+  document.querySelectorAll('#v2-extend-modal [data-close],#v2-import-modal [data-close]').forEach(b => b.addEventListener('click', () => b.closest('.overlay').classList.add('hidden')));
+  document.querySelectorAll('#v2-extend-modal,#v2-import-modal').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.add('hidden'); }));
+  g('v2-save').onclick = () => {
+    try { localStorage.setItem(LS.url, g('v2-url').value.trim()); localStorage.setItem(LS.token, g('v2-secret').value.trim()); } catch {}
+    testConn(false);
+  };
+  g('v2-clear').onclick = async () => {
+    const yes = await askConfirm({title:'Xóa cache key?', body:'Chỉ xóa danh sách lưu trong trình duyệt, không ảnh hưởng server.', okText:'Xóa cache'});
+    if (yes) { keys = []; save(); render(); stats(); t('Đã xóa cache', 'ok'); }
+  };
+
+  // ── khởi tạo ──
+  try { g('v2-url').value = localStorage.getItem(LS.url) || DEFAULT_URL; g('v2-secret').value = localStorage.getItem(LS.token) || ''; } catch { g('v2-url').value = DEFAULT_URL; }
+  render(); stats();
+  return { enter(){ go('keys'); render(); stats(); testConn(true); } };
+})();
 
 // ───────── INTRO + HẠT NỀN ─────────
 (function(){
@@ -1145,42 +1716,50 @@ document.addEventListener('pointermove', e => {
   function finish(){
     if (done) return; done = true;
     intro.classList.add('out');
-    requestAnimationFrame(() => document.body.classList.add('ready'));
+    window.showChooser();
     setTimeout(() => intro.remove(), 1200);
   }
   intro.addEventListener('click', finish);
   document.addEventListener('keydown', finish, {once:true});
   if (reduce) { finish(); } else { setTimeout(finish, 3300); }
 
-  // mạng hạt phát sáng
+  // mạng hạt phát sáng (tự giảm tải theo máy)
   const cv = $('fx'); if (!cv || reduce) return;
-  const cx = cv.getContext('2d'); let W, H, pts = [], dpr = Math.min(devicePixelRatio || 1, 2);
-  const mouse = {x:-999, y:-999};
+  const lite = document.documentElement.classList.contains('lite');
+  const cx = cv.getContext('2d'); if (!cx) return;
+  let W, H, pts = [], dpr = Math.min(devicePixelRatio || 1, lite ? 1.5 : 2), running = true, last = 0, slow = 0, frames = 0;
+  const mouse = {x:-999, y:-999}, STEP = lite ? 1000/30 : 0, LINK = lite ? 95 : 120;
   function size(){
     W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr,0,0,dpr,0,0);
-    const n = W < 700 ? 28 : 60; pts = Array.from({length:n}, () => ({x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35, r:Math.random()*1.6+.6, h:Math.random()}));
+    const n = lite ? 22 : 60; pts = Array.from({length:n}, () => ({x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35, r:Math.random()*1.6+.6, h:Math.random()}));
   }
   addEventListener('resize', size); size();
-  addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  if (!lite) addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; }, {passive:true});
   const cols = ['139,108,255','40,200,240','244,114,182'];
-  function frame(){
-    if (!document.hidden) {
-      cx.clearRect(0,0,W,H);
-      for (const p of pts) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1;
-        const dx = p.x - mouse.x, dy = p.y - mouse.y, d = Math.hypot(dx, dy);
-        if (d < 130) { p.x += dx / d * .6; p.y += dy / d * .6; }
-        cx.beginPath(); cx.fillStyle = `rgba(${cols[(p.h*3)|0]},.85)`; cx.arc(p.x, p.y, p.r, 0, 6.283); cx.fill();
-      }
-      for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
-        const a = pts[i], b = pts[j], d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < 120) { cx.strokeStyle = `rgba(139,108,255,${(1 - d/120) * .22})`; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y); cx.stroke(); }
-      }
-    }
+  function frame(now){
+    if (!running) return;
     requestAnimationFrame(frame);
+    if (document.hidden) return;
+    if (STEP && now - last < STEP) return;
+    const dt = now - last; last = now;
+    // máy quá chậm: tắt hạt để giữ cuộn mượt
+    if (++frames > 20 && dt > 45 && ++slow > 25) { running = false; cv.remove(); document.documentElement.classList.add('lite'); return; }
+    cx.clearRect(0,0,W,H);
+    for (const p of pts) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1;
+      if (!lite) { const dx = p.x - mouse.x, dy = p.y - mouse.y, d = Math.hypot(dx, dy); if (d < 130) { p.x += dx / d * .6; p.y += dy / d * .6; } }
+      cx.fillStyle = `rgba(${cols[(p.h*3)|0]},.85)`; cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 6.283); cx.fill();
+    }
+    cx.lineWidth = 1;
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+      const a = pts[i], b = pts[j], dx = a.x - b.x, dy = a.y - b.y;
+      if (dx > LINK || dx < -LINK || dy > LINK || dy < -LINK) continue;
+      const d = Math.hypot(dx, dy);
+      if (d < LINK) { cx.strokeStyle = `rgba(139,108,255,${(1 - d/LINK) * .22})`; cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y); cx.stroke(); }
+    }
   }
-  frame();
+  requestAnimationFrame(frame);
 })();
 
 // ───────── INIT ─────────
@@ -1190,6 +1769,6 @@ document.addEventListener('pointermove', e => {
   if ($('url').value) health(true);
 })();
 </script>
-<script>setTimeout(function(){document.body.classList.add("ready");var i=document.getElementById("intro");if(i)i.remove()},6000)</script>
+<script>setTimeout(function(){var i=document.getElementById("intro");if(i)i.remove();var c=document.getElementById("chooser");if(c&&!document.body.dataset.menu&&window.showChooser)window.showChooser()},6000)</script>
 </body>
 </html>
